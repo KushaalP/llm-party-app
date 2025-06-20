@@ -25,3 +25,11 @@ dist-ssr
 
 # Environment variables
 .env
+
+socket.on('recommendation-updated', ({ index, movie }) => {
+  setRoom(prev => {
+    const copy = [...prev.recommendations];
+    copy[index] = movie;
+    return { ...prev, recommendations: copy };
+  });
+});

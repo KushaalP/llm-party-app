@@ -49,6 +49,10 @@ app.post('/api/create-room', (req, res) => {
     participants: [{ id: hostId, name: name?.trim() || 'Host', isReady: false, preferences: '' }],
     locked: false,
     recommendations: null,
+    // tracking for rerolls / regenerations
+    regenerateCount: 0,
+    rerollCounts: {},
+    recommendationHistory: []
   });
   
   res.json({ roomCode, hostId });
@@ -216,6 +220,26 @@ async function getMovieRecommendations(preferences) {
   return generateRecommendationsGemini(preferences);
 }
 
+// FIRST_EDIT: helper to ensure movies are unique across a room's history
+async function getUniqueMovies({ existingTitles = new Set(), preferences = [], count = 1, maxAttempts = 5 }) {
+  const uniques = [];
+  const exclude = new Set(existingTitles);
+  let attempts = 0;
+  while (uniques.length < count && attempts < maxAttempts) {
+    // eslint-disable-next-line no-await-in-loop
+    const candidates = await getMovieRecommendations(preferences);
+    for (const movie of candidates) {
+      if (!exclude.has(movie.title)) {
+        exclude.add(movie.title);
+        uniques.push(movie);
+        if (uniques.length === count) break;
+      }
+    }
+    attempts += 1;
+  }
+  return uniques;
+}
+
 io.on('connection', (socket) => {
   socket.on('join-room', (roomCode) => {
     socket.join(roomCode);
@@ -243,15 +267,21 @@ io.on('connection', (socket) => {
         if (room.participants.every(p => p.isReady)) {
           room.locked = true;
           io.to(roomCode).emit('generating-recommendations');
-          
+
           const preferences = room.participants
             .filter(p => p.preferences.trim())
             .map(p => p.preferences);
-          
+
           getMovieRecommendations(preferences)
             .then(recommendations => {
               room.recommendations = recommendations;
+              room.recommendationHistory = [
+                ...(room.recommendationHistory || []),
+                ...recommendations.map(m => m.title)
+              ];
+              room.rerollCounts = {};
               io.to(roomCode).emit('recommendations-ready', recommendations);
+              io.to(roomCode).emit('room-update', room);
             })
             .catch(error => {
               console.error('Error generating recommendations:', error);
@@ -274,16 +304,36 @@ io.on('connection', (socket) => {
   socket.on('regenerate-recommendations', async ({ roomCode, hostId }) => {
     const room = rooms.get(roomCode);
     if (room && room.host === hostId) {
+      if (room.regenerateCount >= 2) {
+        io.to(roomCode).emit('recommendations-error', 'Maximum regenerates reached');
+        return;
+      }
+
       io.to(roomCode).emit('generating-recommendations');
-      
+
       const preferences = room.participants
         .filter(p => p.preferences.trim())
         .map(p => p.preferences);
-      
+
       try {
-        const recommendations = await getMovieRecommendations(preferences);
+        const recommendations = await getUniqueMovies({
+          existingTitles: new Set(room.recommendationHistory || []),
+          preferences,
+          count: 5
+        });
+
+        if (recommendations.length < 5) {
+          io.to(roomCode).emit('recommendations-error', 'Unable to find enough unique movies');
+          return;
+        }
+
+        room.regenerateCount += 1;
         room.recommendations = recommendations;
+        room.recommendationHistory.push(...recommendations.map(m => m.title));
+        room.rerollCounts = {};
+
         io.to(roomCode).emit('recommendations-ready', recommendations);
+        io.to(roomCode).emit('room-update', room);
       } catch (error) {
         console.error('Error regenerating recommendations:', error);
         io.to(roomCode).emit('recommendations-error', 'Failed to regenerate recommendations');
@@ -297,6 +347,48 @@ io.on('connection', (socket) => {
       room.preferencesStarted = true;
       io.to(roomCode).emit('preferences-started');
       io.to(roomCode).emit('room-update', room);
+    }
+  });
+
+  socket.on('reroll-movie', async ({ roomCode, hostId, movieIndex }) => {
+    const room = rooms.get(roomCode);
+    if (!room || room.host !== hostId) return;
+
+    // Initialize counter if missing
+    if (!room.rerollCounts) room.rerollCounts = {};
+    room.rerollCounts[movieIndex] = room.rerollCounts[movieIndex] || 0;
+
+    if (room.rerollCounts[movieIndex] >= 2) {
+      io.to(roomCode).emit('recommendations-error', 'Maximum rerolls reached for this movie');
+      return;
+    }
+
+    const preferences = room.participants
+      .filter(p => p.preferences.trim())
+      .map(p => p.preferences);
+
+    try {
+      const [newMovie] = await getUniqueMovies({
+        existingTitles: new Set(room.recommendationHistory || []),
+        preferences,
+        count: 1
+      });
+
+      if (!newMovie) {
+        io.to(roomCode).emit('recommendations-error', 'Unable to find a unique movie');
+        return;
+      }
+
+      // Replace movie at index immutably
+      room.recommendations = room.recommendations.map((m, i) => (i === movieIndex ? newMovie : m));
+      room.recommendationHistory.push(newMovie.title);
+      room.rerollCounts[movieIndex] += 1;
+
+      io.to(roomCode).emit('recommendations-ready', room.recommendations);
+      io.to(roomCode).emit('room-update', room);
+    } catch (err) {
+      console.error('Error rerolling movie:', err);
+      io.to(roomCode).emit('recommendations-error', 'Failed to reroll movie');
     }
   });
 });

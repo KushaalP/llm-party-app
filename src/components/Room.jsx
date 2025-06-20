@@ -5,6 +5,7 @@ import { useSocket } from '../hooks/useSocket'
 import Lobby from './Lobby'
 import Preferences from './Preferences'
 import Recommendations from './Recommendations'
+import { Film } from 'lucide-react'
 
 const API_BASE = '/api'
 
@@ -89,6 +90,10 @@ export default function Room() {
       setPhase('preferences')
     })
 
+    socket.on('generation-cancelled', () => {
+      setPhase('preferences')
+    })
+
     return () => {
       socket.off('room-update')
       socket.off('participant-joined')
@@ -97,6 +102,7 @@ export default function Room() {
       socket.off('recommendations-ready')
       socket.off('recommendations-error')
       socket.off('preferences-started')
+      socket.off('generation-cancelled')
     }
   }, [socket, roomCode, participantId, navigate])
 
@@ -161,11 +167,22 @@ export default function Room() {
     }
   }
 
+  // FIRST_EDIT: per-movie reroll
+  const handleRerollMovie = (movieIndex) => {
+    if (socket && isHost) {
+      socket.emit('reroll-movie', {
+        roomCode,
+        hostId: participantId,
+        movieIndex
+      })
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <Film className="w-12 h-12 animate-spin text-green-400 mx-auto mb-4" />
           <p className="text-gray-400">Loading room...</p>
         </div>
       </div>
@@ -229,7 +246,7 @@ export default function Room() {
         {phase === 'generating' && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto mb-6"></div>
+              <Film className="w-20 h-20 animate-spin text-green-400 mx-auto mb-6" />
               <h2 className="text-2xl font-semibold mb-2">Generating Recommendations</h2>
               <p className="text-gray-400">Our AI is analyzing everyone's preferences...</p>
             </div>
@@ -241,6 +258,9 @@ export default function Room() {
             recommendations={room.recommendations}
             isHost={isHost}
             onRegenerate={handleRegenerateRecommendations}
+            canRegenerate={room.regenerateCount < 2}
+            onReroll={handleRerollMovie}
+            rerollCounts={room.rerollCounts}
           />
         )}
       </div>

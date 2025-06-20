@@ -1,4 +1,21 @@
-export default function Recommendations({ recommendations, isHost, onRegenerate }) {
+import React, { useState, useEffect } from 'react'
+import { RefreshCw, Film } from 'lucide-react'
+
+export default function Recommendations({
+  recommendations,
+  isHost,
+  onRegenerate,
+  canRegenerate = true,
+  onReroll = () => {},
+  rerollCounts = {},
+}) {
+  const [loadingIndex, setLoadingIndex] = useState(null)
+
+  // reset loading state when recommendations prop changes
+  useEffect(() => {
+    setLoadingIndex(null)
+  }, [recommendations])
+
   if (!recommendations || recommendations.length === 0) {
     return (
       <div className="text-center py-20">
@@ -14,9 +31,11 @@ export default function Recommendations({ recommendations, isHost, onRegenerate 
         {isHost && (
           <button
             onClick={onRegenerate}
-            className="btn btn-secondary px-6 py-2"
+            disabled={!canRegenerate || loadingIndex !== null}
+            className={`flex items-center gap-2 btn btn-secondary px-6 py-2 ${!canRegenerate || loadingIndex !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            🔄 Regenerate Recommendations
+            <RefreshCw className="w-4 h-4" />
+            <span>Regenerate All</span>
           </button>
         )}
       </div>
@@ -25,20 +44,43 @@ export default function Recommendations({ recommendations, isHost, onRegenerate 
         {recommendations.map((movie, index) => (
           <div
             key={index}
-            className="bg-gray-800 rounded-2xl overflow-hidden hover:bg-gray-750 transition-colors"
+            className="bg-gray-800 rounded-2xl overflow-hidden hover:bg-gray-750 transition-colors relative"
           >
+            {/* Loading overlay over poster */}
             <div className="flex flex-col md:flex-row">
-              <div className="md:w-48 flex-shrink-0">
+              <div className="relative md:w-48 flex-shrink-0 group">
+                {loadingIndex === index && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
+                    <Film className="w-24 h-24 animate-spin text-white opacity-90" />
+                  </div>
+                )}
                 <img
                   src={movie.poster || 'https://via.placeholder.com/342x513?text=No+Image'}
                   alt={`${movie.title} poster`}
                   className="w-full h-72 md:h-full object-cover"
                 />
+
+                {/* Reroll button overlay */}
+                {isHost && (
+                  <button
+                    onClick={() => {
+                      setLoadingIndex(index)
+                      onReroll(index)
+                    }}
+                    disabled={rerollCounts[index] >= 2 || loadingIndex !== null}
+                    className={`btn btn-secondary rounded-full w-16 h-16 flex items-center justify-center transition-transform duration-150 absolute bottom-3 right-3 z-30 ${
+                      rerollCounts[index] >= 2 || loadingIndex !== null ? 'opacity-50 cursor-not-allowed' : 'group-hover:scale-110 hover:scale-110'
+                    }`}
+                    title="Reroll this movie"
+                  >
+                    <RefreshCw className="w-7 h-7" />
+                  </button>
+                )}
               </div>
               
               <div className="flex-1 p-6">
                 <div className="flex items-start justify-between mb-4">
-                  <div>
+                  <div className="pr-16 md:pr-0">
                     <div className="flex items-center mb-4">
                       <span className="rank-badge">#{index + 1}</span>
                       <h3 className="text-2xl font-bold">{movie.title}</h3>

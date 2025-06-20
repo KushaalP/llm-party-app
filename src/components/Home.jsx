@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { Film } from 'lucide-react'
 
 const API_BASE = '/api'
 
@@ -87,7 +88,7 @@ export default function Home() {
           >
             {isCreating ? (
               <>
-                <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
+                <Film className="w-4 h-4 animate-spin" />
                 Creating...
               </>
             ) : (
@@ -127,7 +128,7 @@ export default function Home() {
             >
               {isJoining ? (
                 <>
-                  <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
+                  <Film className="w-4 h-4 animate-spin" />
                   Joining...
                 </>
               ) : (
