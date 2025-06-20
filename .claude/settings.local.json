@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run dev:full:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run lint)",
+      "Bash(lsof:*)",
+      "Bash(npx vite:*)",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(telnet:*)",
+      "Bash(nc:*)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": []
+  }
+}
