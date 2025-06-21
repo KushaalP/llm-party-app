@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* global process */
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -192,7 +194,21 @@ async function generateRecommendationsGemini(preferences=[]) {
 
     const formattedPrefs = preferences.length ? `Here are the group preferences: \n- ${preferences.join('\n- ')}` : 'No explicit preferences were provided.';
 
-    const prompt = `You are Movie Party AI, an expert movie-night matchmaker. Choose five films the group will most likely enjoy together. For each movie provide:\n- title\n- year (numeric release year)\n- reasoning (2 short bullet points referencing the preferences)\n\nRespond ONLY with JSON in this form (max 5 items, no markdown):\n[\n  {\n    \"title\": \"Movie Title\",\n    \"year\": 1994,\n    \"reasoning\": \"Why it fits...\"\n  }\n]\n\n${formattedPrefs}`;
+    const prompt = `You are Movie Party AI, an expert movie-night matchmaker. Choose five films the group will most likely enjoy together. For each movie provide:
+- title
+- year (numeric release year)
+- reasoning (2 short bullet points referencing the preferences)
+
+Respond ONLY with JSON in this form (max 5 items, no markdown):
+[
+  {
+    "title": "Movie Title",
+    "year": 1994,
+    "reasoning": "Why it fits..."
+  }
+]
+
+${formattedPrefs}`;
 
     // Log the prompt for debugging
     console.log('Gemini prompt:', prompt);

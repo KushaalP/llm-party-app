@@ -1,3 +1,6 @@
+/* eslint-env node */
+/* global process */
+/* eslint-disable no-unused-vars */
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';

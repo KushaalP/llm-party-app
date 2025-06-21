@@ -56,7 +56,6 @@ export default function Preferences({ room, currentParticipant, onSubmitPreferen
     onSetReady(newReadyState)
   }
 
-  const allReady = room.participants.every(p => p.isReady)
   const readyCount = room.participants.filter(p => p.isReady).length
 
   return (
