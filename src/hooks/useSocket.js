@@ -26,6 +26,10 @@ export function useSocket() {
     socketRef.current.on('connect_error', (error) => {
       console.log('Socket connection error:', error)
     })
+
+    socketRef.current.on('error', (error) => {
+      console.log('Socket error:', error)
+    })
     
     return () => {
       if (socketRef.current) {
