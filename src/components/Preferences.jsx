@@ -70,11 +70,8 @@ export default function Preferences({ room, currentParticipant, onSubmitPreferen
             <h3 className="text-lg font-medium text-white mb-6">Your Preferences:</h3>
             <div className="flex flex-wrap gap-3">
               {userPreferences.map((pref, index) => (
-                <div
-                  key={index}
-                  className="preference-tag"
-                >
-                  {pref}
+                <div key={index} className="preference-tag">
+                  <span className="pref-text">{pref}</span>
                   <button
                     onClick={() => removePreference(index)}
                     className="hover:text-red-600 transition-colors ml-1 font-bold"

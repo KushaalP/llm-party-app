@@ -633,24 +633,23 @@ body {
   left: 100%;
 }
 
-/* Preference tag close button styling */
+/* Close "X" button inside preference tag */
 .preference-tag button {
+  background: transparent;
+  color: #000000;
   font-size: 14px;
   font-weight: 700;
-  color: #333333;
-  margin-left: 6px;
-  transition: color 0.2s ease, transform 0.2s ease;
+  margin-left: 0px;
+  border: none;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  line-height: 1;
+  transition: transform 0.2s ease;
 }
 
 .preference-tag button:hover {
-  color: #ef4444;
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 /* Uniform participant cards */
@@ -796,4 +795,12 @@ body {
     margin-bottom: 10px;
     column-gap: 0px;
   }
+}
+
+.pref-text {
+  flex: 1 1 auto;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
