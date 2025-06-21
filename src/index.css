@@ -772,3 +772,28 @@ body {
 .mr-2 {
   margin-right: 8px;
 }
+.mt-2 {
+  margin-top: 8px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 767px) {
+  .mobile-card-info {
+    padding: 16px;
+  }
+  .mobile-card-info .year-text {
+    margin-bottom: 6px;
+  }
+  .mobile-card-info .tap-hint {
+    margin-top: 8px;
+  }
+  .mobile-card-info .title-row {
+    margin-bottom: 10px;
+    column-gap: 0px;
+  }
+}
