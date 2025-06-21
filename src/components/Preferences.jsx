@@ -189,7 +189,9 @@ export default function Preferences({ room, currentParticipant, onSubmitPreferen
                     {participant.isReady ? '✓' : participant.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-medium text-white text-sm">{participant.name}</p>
+                    <p className="font-medium text-white text-sm">
+                      {participant.name} {participant.id === currentParticipant.id && <span className="text-gray-400">(You)</span>}
+                    </p>
                     <div className="flex items-center gap-2 text-xs">
                       {participant.id === room.host && (
                         <span className="badge badge-host">👑 Host</span>

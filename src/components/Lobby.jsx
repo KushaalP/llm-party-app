@@ -66,7 +66,9 @@ export default function Lobby({ room, isHost, onStartPreferences, onKickParticip
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold text-white truncate">{displayName}</p>
+                      <p className="font-semibold text-white truncate">
+                        {displayName} {participant.id === localStorage.getItem('participantId') && <span className="text-gray-400">(You)</span>}
+                      </p>
                       {participant.id === room.host && (
                         <span className="badge badge-host">
                           👑 Host
