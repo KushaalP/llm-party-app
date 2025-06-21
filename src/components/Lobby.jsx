@@ -46,7 +46,7 @@ export default function Lobby({ room, isHost, onStartPreferences, onKickParticip
       <div className="card">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-white">Participants</h2>
-          <span className="bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-sm font-medium">
+          <span className="text-gray-300 font-medium">
             {room.participants.length}/10
           </span>
         </div>

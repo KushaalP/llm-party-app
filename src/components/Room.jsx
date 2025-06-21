@@ -5,7 +5,8 @@ import { useSocket } from '../hooks/useSocket'
 import Lobby from './Lobby'
 import Preferences from './Preferences'
 import Recommendations from './Recommendations'
-import { Film } from 'lucide-react'
+import ConfirmDialog from './ConfirmDialog'
+import { Film, LogOut } from 'lucide-react'
 
 const API_BASE = '/api'
 
@@ -20,6 +21,7 @@ export default function Room() {
   const [phase, setPhase] = useState('lobby') // lobby, preferences, generating, results
   const [participantId] = useState(localStorage.getItem('participantId'))
   const [isHost] = useState(localStorage.getItem('isHost') === 'true')
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
 
   useEffect(() => {
     if (!participantId) {
@@ -53,7 +55,7 @@ export default function Room() {
   useEffect(() => {
     if (!socket) return
 
-    socket.emit('join-room', roomCode)
+    socket.emit('join-room', roomCode, participantId)
 
     socket.on('room-update', (updatedRoom) => {
       setRoom(updatedRoom)
@@ -94,6 +96,15 @@ export default function Room() {
       setPhase('preferences')
     })
 
+    socket.on('room-closed', () => {
+      navigate('/')
+    })
+
+    socket.on('participant-left', ({ participantId: leftParticipantId, name }) => {
+      console.log(`Participant ${name} (${leftParticipantId}) left the room`)
+      // The room-update event will handle the actual state update
+    })
+
     return () => {
       socket.off('room-update')
       socket.off('participant-joined')
@@ -103,6 +114,8 @@ export default function Room() {
       socket.off('recommendations-error')
       socket.off('preferences-started')
       socket.off('generation-cancelled')
+      socket.off('room-closed')
+      socket.off('participant-left')
     }
   }, [socket, roomCode, participantId, navigate])
 
@@ -178,6 +191,22 @@ export default function Room() {
     }
   }
 
+  const handleLeaveRoom = () => {
+    setShowLeaveDialog(true)
+  }
+
+  const confirmLeaveRoom = () => {
+    if (socket) {
+      socket.emit('leave-room', {
+        roomCode,
+        participantId
+      })
+    }
+    localStorage.removeItem('participantId')
+    localStorage.removeItem('isHost')
+    navigate('/')
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -212,7 +241,15 @@ export default function Room() {
   return (
     <div className="min-h-screen p-4 py-8">
       <div className="container mx-auto">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          <button
+            onClick={handleLeaveRoom}
+            className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2"
+          >
+            <LogOut className="w-4 h-4" />
+            Leave Room
+          </button>
+          
           <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
             Room <span className="gradient-text">{roomCode}</span>
           </h1>
@@ -263,6 +300,20 @@ export default function Room() {
             rerollCounts={room.rerollCounts}
           />
         )}
+        
+        <ConfirmDialog
+          isOpen={showLeaveDialog}
+          onConfirm={confirmLeaveRoom}
+          onCancel={() => setShowLeaveDialog(false)}
+          title={isHost ? "Leave Room" : "Leave Room"}
+          message={
+            isHost 
+              ? "As the host, leaving will close the room for all participants. Are you sure you want to continue?"
+              : "Are you sure you want to leave this room?"
+          }
+          confirmText="Leave"
+          cancelText="Stay"
+        />
       </div>
     </div>
   )

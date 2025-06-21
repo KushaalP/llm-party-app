@@ -48,7 +48,7 @@ app.post('/api/create-room', (req, res) => {
   rooms.set(roomCode, {
     code: roomCode,
     host: hostId,
-    participants: [{ id: hostId, name: name?.trim() || 'Host', isReady: false, preferences: '' }],
+    participants: [{ id: hostId, name: name?.trim() || 'Host', isReady: false, preferences: '', socketId: null }],
     locked: false,
     recommendations: null,
     // tracking for rerolls / regenerations
@@ -77,7 +77,7 @@ app.post('/api/join-room', (req, res) => {
   }
   
   const participantId = uuidv4();
-  const participant = { id: participantId, name, isReady: false, preferences: '' };
+  const participant = { id: participantId, name, isReady: false, preferences: '', socketId: null };
   room.participants.push(participant);
   
   io.to(roomCode).emit('participant-joined', participant);
@@ -262,8 +262,50 @@ async function getUniqueMovies({ existingTitles = new Set(), preferences = [], c
 }
 
 io.on('connection', (socket) => {
-  socket.on('join-room', (roomCode) => {
+  console.log('Socket connected:', socket.id);
+
+  socket.on('error', (error) => {
+    console.error('Socket error:', error);
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log('Socket disconnected:', socket.id, reason);
+    
+    // Clean up participant from any rooms they were in
+    for (const [roomCode, room] of rooms.entries()) {
+      const participantIndex = room.participants.findIndex(p => p.socketId === socket.id);
+      if (participantIndex !== -1) {
+        const participant = room.participants[participantIndex];
+        console.log(`Cleaning up disconnected participant ${participant.name} from room ${roomCode}`);
+        
+        if (room.host === participant.id) {
+          // Host disconnected - close the room
+          io.to(roomCode).emit('room-closed', { reason: 'Host disconnected' });
+          rooms.delete(roomCode);
+        } else {
+          // Regular participant disconnected
+          room.participants.splice(participantIndex, 1);
+          io.to(roomCode).emit('participant-left', { participantId: participant.id, name: participant.name });
+          io.to(roomCode).emit('room-update', room);
+        }
+        break;
+      }
+    }
+  });
+
+  socket.on('join-room', (roomCode, participantId) => {
+    console.log(`Socket ${socket.id} joining room ${roomCode} as participant ${participantId}`);
     socket.join(roomCode);
+    
+    // Store socket ID with participant
+    const room = rooms.get(roomCode);
+    if (room && participantId) {
+      const participant = room.participants.find(p => p.id === participantId);
+      if (participant) {
+        participant.socketId = socket.id;
+        console.log(`Updated participant ${participant.name} with socket ID ${socket.id}`);
+      }
+    }
   });
   
   socket.on('update-preferences', ({ roomCode, participantId, preferences }) => {
@@ -411,6 +453,37 @@ io.on('connection', (socket) => {
       console.error('Error rerolling movie:', err);
       io.to(roomCode).emit('recommendations-error', 'Failed to reroll movie');
     }
+  });
+
+  socket.on('leave-room', ({ roomCode, participantId }) => {
+    console.log(`Leave room request: ${participantId} leaving ${roomCode}`);
+    const room = rooms.get(roomCode);
+    if (!room) {
+      console.log(`Room ${roomCode} not found`);
+      return;
+    }
+
+    const participant = room.participants.find(p => p.id === participantId);
+    if (!participant) {
+      console.log(`Participant ${participantId} not found in room ${roomCode}`);
+      return;
+    }
+
+    if (room.host === participantId) {
+      // Host is leaving - close the room
+      console.log(`Host ${participantId} leaving, closing room ${roomCode}`);
+      io.to(roomCode).emit('room-closed', { reason: 'Host left the room' });
+      rooms.delete(roomCode);
+    } else {
+      // Regular participant leaving
+      console.log(`Participant ${participant.name} leaving room ${roomCode}`);
+      room.participants = room.participants.filter(p => p.id !== participantId);
+      console.log(`Participants after removal: ${room.participants.length}`);
+      io.to(roomCode).emit('participant-left', { participantId, name: participant.name });
+      io.to(roomCode).emit('room-update', room);
+    }
+
+    socket.leave(roomCode);
   });
 });
 

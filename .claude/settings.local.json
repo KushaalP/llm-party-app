@@ -17,7 +17,8 @@
       "Bash(npm run build:*)",
       "Bash(npx eslint:*)",
       "Bash(grep:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npm run server:*)"
     ],
     "deny": []
   }
