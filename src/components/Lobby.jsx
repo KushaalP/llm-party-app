@@ -1,6 +1,29 @@
+import React from 'react'
+
 export default function Lobby({ room, isHost, onStartPreferences, onKickParticipant }) {
+  const [copied, setCopied] = React.useState(false)
+
   const copyRoomCode = async () => {
-    await navigator.clipboard.writeText(room.code)
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(room.code)
+      } else {
+        // Fallback for insecure contexts / older iOS
+        const textarea = document.createElement('textarea')
+        textarea.value = room.code
+        textarea.style.position = 'fixed' // avoid scrolling to bottom
+        textarea.style.opacity = '0'
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+      }
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500) // revert after 1.5s
+    } catch (err) {
+      console.error('Failed to copy', err)
+    }
   }
 
   return (
@@ -15,7 +38,7 @@ export default function Lobby({ room, isHost, onStartPreferences, onKickParticip
           onClick={copyRoomCode}
           className="btn btn-secondary"
         >
-          📋 Copy Code
+          {copied ? '✅ Copied!' : '📋 Copy Code'}
         </button>
       </div>
 
