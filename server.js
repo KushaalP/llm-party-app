@@ -146,14 +146,19 @@ function getMockMovies() {
   return shuffled.slice(0, 5);
 }
 
-async function fetchMovieDetails(title) {
+async function fetchMovieDetails(title, releaseYear) {
   try {
     if (!TMDB_API_KEY) return null;
     const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}`;
     const res = await fetch(searchUrl);
     const data = await res.json();
     if (data.results && data.results.length) {
-      const movie = data.results[0];
+      // If a release year is provided, try to find a matching result first
+      let movie = data.results[0];
+      if (releaseYear) {
+        const match = data.results.find(r => r.release_date && r.release_date.startsWith(String(releaseYear)));
+        if (match) movie = match;
+      }
 
       // Fetch detailed info to get genre names
       const detailRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}`);
@@ -163,7 +168,7 @@ async function fetchMovieDetails(title) {
 
       return {
         title: movie.title,
-        year: movie.release_date ? new Date(movie.release_date).getFullYear() : undefined,
+        year: movie.release_date ? new Date(movie.release_date).getFullYear() : releaseYear,
         reasoning: '', // will fill later
         genres,
         poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : undefined,
@@ -187,7 +192,7 @@ async function generateRecommendationsGemini(preferences=[]) {
 
     const formattedPrefs = preferences.length ? `Here are the group preferences: \n- ${preferences.join('\n- ')}` : 'No explicit preferences were provided.';
 
-    const prompt = `You are Movie Party AI, an expert movie-night matchmaker. Choose five films the group will most likely enjoy together. For each movie provide:\n- title\n- reasoning (2 short bullet points referencing the preferences)\n\nRespond ONLY with JSON in this form (max 5 items, no markdown):\n[\n  {\n    \"title\": \"Movie Title\",\n    \"reasoning\": \"Why it fits...\"\n  }\n]\n\n${formattedPrefs}`;
+    const prompt = `You are Movie Party AI, an expert movie-night matchmaker. Choose five films the group will most likely enjoy together. For each movie provide:\n- title\n- year (numeric release year)\n- reasoning (2 short bullet points referencing the preferences)\n\nRespond ONLY with JSON in this form (max 5 items, no markdown):\n[\n  {\n    \"title\": \"Movie Title\",\n    \"year\": 1994,\n    \"reasoning\": \"Why it fits...\"\n  }\n]\n\n${formattedPrefs}`;
 
     // Log the prompt for debugging
     console.log('Gemini prompt:', prompt);
@@ -202,11 +207,11 @@ async function generateRecommendationsGemini(preferences=[]) {
     if (Array.isArray(parsed) && parsed.length) {
       // Enrich with TMDB
       const enriched = await Promise.all(parsed.slice(0, 5).map(async (item) => {
-        const base = await fetchMovieDetails(item.title);
+        const base = await fetchMovieDetails(item.title, item.year);
         if (base) {
           return { ...base, reasoning: item.reasoning };
         }
-        return { title: item.title, reasoning: item.reasoning };
+        return { title: item.title, year: item.year, reasoning: item.reasoning };
       }));
       return enriched;
     }

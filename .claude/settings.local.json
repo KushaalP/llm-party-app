@@ -14,7 +14,9 @@
       "Bash(npm --version)",
       "Bash(telnet:*)",
       "Bash(nc:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx eslint:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

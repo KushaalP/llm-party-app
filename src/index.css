@@ -84,6 +84,7 @@ body {
   color: #000;
   position: relative;
   overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .btn-primary::before {
@@ -99,12 +100,17 @@ body {
 
 .btn-primary:hover {
   background-position: 100% 0;
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(29, 185, 84, 0.4);
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+  filter: brightness(1.05);
 }
 
 .btn-primary:hover::before {
   left: 100%;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
 }
 
 .btn-secondary {
@@ -154,7 +160,7 @@ body {
 .input:focus {
   outline: none;
   border-color: #1db954;
-  box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2), 0 0 20px rgba(74, 222, 128, 0.3);
   background: #1a1a1a;
   transform: translateY(-1px);
 }
@@ -287,22 +293,7 @@ body {
   background-color: #16a34a;
 }
 
-.bg-green-900\\/30 {
-  background-color: rgba(20, 83, 45, 0.3);
-}
-
-.bg-red-900\\/20 {
-  background-color: rgba(127, 29, 29, 0.2);
-}
-
-/* Border classes */
-.border-green-500\\/50 {
-  border-color: rgba(34, 197, 94, 0.5);
-}
-
-.border-red-500 {
-  border-color: #ef4444;
-}
+/* Removed invalid escaped utility classes to resolve linter issues */
 
 /* Text colors */
 .text-yellow-400 {
@@ -389,6 +380,10 @@ body {
   padding: 24px;
 }
 
+.p-10 {
+  padding: 40px;
+}
+
 .px-4 {
   padding-left: 16px;
   padding-right: 16px;
@@ -409,6 +404,10 @@ body {
 
 .max-w-4xl {
   max-width: 896px;
+}
+
+.max-w-lg {
+  max-width: 512px;
 }
 
 .mx-auto {
@@ -690,4 +689,60 @@ body {
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+/* === MovieParty Homepage Enhancements === */
+
+/* Party gradient + pulse */
+@keyframes partyPulse {
+  0%,100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.9; filter: brightness(1.2); }
+}
+
+.logo-title .gradient-text {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: partyPulse 3s ease-in-out infinite;
+}
+
+/* film grain removed */
+
+/* floating icons */
+.floating-icon {
+  position: fixed;
+  bottom: -40px;
+  font-size: 24px;
+  opacity: 0.1;
+  filter: blur(0.5px);
+  animation: float-up var(--dur,20s) linear infinite;
+  will-change: transform;
+  z-index: -1;
+}
+
+@keyframes float-up {
+  from { transform: translateY(0) translateX(0); }
+  to { transform: translateY(-120vh) translateX(calc(var(--moveX,0) * 1%)); }
+}
+
+/* slide-up ticker */
+@keyframes slideUp {
+  0% { transform: translateY(100%); }
+  10% { transform: translateY(0); }
+  90% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+.animate-slideUp {
+  animation: slideUp 4s ease-in-out infinite;
+}
+
+/* Floating movie posters */
+.floating-poster {
+  opacity: 0.12;
+  filter: grayscale(20%) saturate(80%);
+  border-radius: 4px;
+  will-change: transform;
+  z-index: -1;
 }

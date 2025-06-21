@@ -59,23 +59,6 @@ export default function Recommendations({
                   alt={`${movie.title} poster`}
                   className="w-full h-72 md:h-full object-cover"
                 />
-
-                {/* Reroll button overlay */}
-                {isHost && (
-                  <button
-                    onClick={() => {
-                      setLoadingIndex(index)
-                      onReroll(index)
-                    }}
-                    disabled={rerollCounts[index] >= 2 || loadingIndex !== null}
-                    className={`btn btn-secondary rounded-full w-16 h-16 flex items-center justify-center transition-transform duration-150 absolute bottom-3 right-3 z-30 ${
-                      rerollCounts[index] >= 2 || loadingIndex !== null ? 'opacity-50 cursor-not-allowed' : 'group-hover:scale-110 hover:scale-110'
-                    }`}
-                    title="Reroll this movie"
-                  >
-                    <RefreshCw className="w-7 h-7" />
-                  </button>
-                )}
               </div>
               
               <div className="flex-1 p-6">

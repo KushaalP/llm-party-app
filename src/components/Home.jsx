@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { Film } from 'lucide-react'
@@ -13,6 +13,10 @@ export default function Home() {
   const [error, setError] = useState('')
   const [createName, setCreateName] = useState('')
   const navigate = useNavigate()
+  const [liveCount, setLiveCount] = useState(127)
+  const line1 = "45 minutes browsing. 5 people arguing. 0 movies watched."
+  const line2Full = "Let's fix that in 2 minutes."
+  const [typedLine2, setTypedLine2] = useState('')
 
   const handleCreateRoom = async () => {
     setIsCreating(true)
@@ -57,21 +61,63 @@ export default function Home() {
     }
   }
 
+  // --- Effects for UI animations ---
+  useEffect(() => {
+    // Typing effect for second tagline line
+    const startDelay = 1500 // ms
+    const typingSpeed = 50 // ms per char
+    let timeoutId = setTimeout(() => {
+      let index = 0
+      const intervalId = setInterval(() => {
+        setTypedLine2(line2Full.slice(0, index + 1))
+        index++
+        if (index === line2Full.length) {
+          clearInterval(intervalId)
+        }
+      }, typingSpeed)
+    }, startDelay)
+    return () => clearTimeout(timeoutId)
+  }, [])
+
+  // Live parties counter pulse
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveCount((prev) => prev + (Math.random() > 0.5 ? 1 : -1))
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
+      {/* Live counter top-left */}
+      <div style={{ position: 'fixed', top: '16px', left: '16px', zIndex: 10 }} className="flex items-center gap-2 text-sm">
+        <span className="animate-pulse text-green-400">●</span>
+        <span className="text-gray-400"><span className="text-white font-semibold">{liveCount}</span> parties deciding right now</span>
+      </div>
+
+      <div className="max-w-lg w-full">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-6xl font-bold text-white mb-4 title-bounce">
+        <div className="text-center mb-10">
+          <h1 className="logo-title text-7xl font-extrabold mb-4 title-bounce">
             Movie<span className="gradient-text">Party</span>
           </h1>
-          <p className="text-gray-400 text-lg">
-            AI-powered movie recommendations for your group
-          </p>
+
+          {/* Enhanced Tagline */}
+          <div className="space-y-1" style={{ minHeight: '48px' }}>
+            <p className="text-gray-400 text-sm md:text-base">
+              {line1}
+            </p>
+            <p className="text-white text-lg md:text-xl">
+              {typedLine2}
+            </p>
+          </div>
+
+          {/* Spacer after tagline */}
+          <div className="mt-6" />
         </div>
 
         {/* Main Card */}
-        <div className="card space-y-6">
+        <div className="card space-y-6 p-10 mt-8">
           {/* Create Form */}
           <input
             type="text"
