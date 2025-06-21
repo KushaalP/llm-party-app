@@ -547,7 +547,7 @@ body {
 
 /* Rank badge for recommendation list */
 .rank-badge {
-  background: linear-gradient(45deg, #34d399, #60a5fa);
+  background: linear-gradient(45deg, #16a34a, #22c55e);
   color: #ffffff;
   font-size: 16px;
   font-weight: 700;
@@ -745,4 +745,30 @@ body {
   border-radius: 4px;
   will-change: transform;
   z-index: -1;
+}
+
+/* === Display Utilities (needed for responsive show/hide) === */
+.block {
+  display: block;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .md\:block {
+    display: block;
+  }
+  .md\:hidden {
+    display: none !important;
+  }
+}
+
+.ml-4 {
+  margin-left: 15px;
+}
+
+.mr-2 {
+  margin-right: 8px;
 }
