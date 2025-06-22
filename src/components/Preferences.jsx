@@ -197,7 +197,7 @@ export default function Preferences({ room, currentParticipant, onSubmitPreferen
                         <span className="badge badge-host">👑 Host</span>
                       )}
                       <span className={participant.isReady ? 'text-green-400 font-medium' : 'text-gray-400 font-medium italic'}>
-                        {participant.isReady ? 'Ready' : 'Choosing...'}
+                        {participant.isReady ? 'Ready' : <><span>Choosing</span><span className="anim-dots" /></>}
                       </span>
                     </div>
                   </div>

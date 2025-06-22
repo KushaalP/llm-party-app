@@ -543,6 +543,7 @@ body {
 .badge-host {
   background: linear-gradient(45deg, #16a34a, #22c55e);
   color: #ffffff;
+  vertical-align: middle;
 }
 
 /* Rank badge for recommendation list */
@@ -664,17 +665,25 @@ body {
   background: transparent;
   border: 1px solid #ef4444;
   color: #ef4444;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 9999px;
+  line-height: 1;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .remove-btn:hover {
-  background: #ef4444;
+  background: linear-gradient(45deg, #ef4444, #f87171);
   color: #ffffff;
   transform: scale(1.05);
+}
+
+.remove-btn:active {
+  transform: scale(0.97);
 }
 
 /* Divider pill style for OR in Home page */
@@ -803,4 +812,18 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Choosing dots animation */
+@keyframes dotPulse {
+  0% { width: 0 }
+  100% { width: 1.2em }
+}
+.anim-dots::after {
+  content: '...';
+  display: inline-block;
+  overflow: hidden;
+  width: 0;
+  animation: dotPulse 1s steps(4, end) infinite;
+  vertical-align: middle;
 }
