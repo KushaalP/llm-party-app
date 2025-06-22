@@ -93,7 +93,7 @@ app.get('/api/room/:code', (req, res) => {
   res.json(room);
 });
 
-function getMockMovies() {
+function getMockMovies(excludedTitles = []) {
   // Mock movie recommendations with various data
   const mockMovies = [
     {
@@ -140,11 +140,66 @@ function getMockMovies() {
       poster: "https://image.tmdb.org/t/p/w500/pThyQovXQrw2m0s9x82twj48Jq4.jpg",
       overview: "A detective investigates the death of a patriarch of an eccentric, combative family.",
       rating: 7.9
+    },
+    {
+      title: "Dune",
+      year: 2021,
+      reasoning: "Epic sci-fi spectacle with stunning visuals and compelling world-building for fans of grand storytelling.",
+      genres: ["Sci-Fi", "Adventure", "Drama"],
+      poster: "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+      overview: "Paul Atreides leads nomadic tribes in a rebellion against the evil House Harkonnen.",
+      rating: 8.1
+    },
+    {
+      title: "The Batman",
+      year: 2022,
+      reasoning: "Dark, grounded take on the iconic superhero with noir atmosphere and compelling detective work.",
+      genres: ["Action", "Crime", "Drama"],
+      poster: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+      overview: "Batman ventures into Gotham City's underworld when a sadistic killer leaves behind a trail of cryptic clues.",
+      rating: 7.8
+    },
+    {
+      title: "Top Gun: Maverick",
+      year: 2022,
+      reasoning: "High-octane action and emotional depth that appeals to both nostalgia and new audiences.",
+      genres: ["Action", "Drama"],
+      poster: "https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg",
+      overview: "After thirty years, Maverick is still pushing the envelope as a top naval aviator.",
+      rating: 8.3
+    },
+    {
+      title: "Everything Everywhere All at Once",
+      year: 2022,
+      reasoning: "Mind-bending multiverse adventure that combines humor, heart, and spectacular creativity.",
+      genres: ["Action", "Adventure", "Comedy"],
+      poster: "https://image.tmdb.org/t/p/w500/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg",
+      overview: "A Chinese-American woman gets swept up in an insane adventure in which she alone can save the world.",
+      rating: 8.1
+    },
+    {
+      title: "The Menu",
+      year: 2022,
+      reasoning: "Dark comedy thriller with unexpected twists that will keep groups guessing and discussing.",
+      genres: ["Comedy", "Horror", "Thriller"],
+      poster: "https://image.tmdb.org/t/p/w500/v31MsWhF9WFh7Qooq6xSBbmJxoG.jpg",
+      overview: "A couple travels to a coastal island to eat at an exclusive restaurant where the chef has prepared a lavish menu.",
+      rating: 7.2
+    },
+    {
+      title: "Glass Onion: A Knives Out Mystery",
+      year: 2022,
+      reasoning: "Clever mystery sequel with ensemble cast and witty dialogue perfect for group viewing.",
+      genres: ["Comedy", "Crime", "Drama"],
+      poster: "https://image.tmdb.org/t/p/w500/vDGr1YdrlfbU9wxTOdpf3zChmv9.jpg",
+      overview: "Detective Benoit Blanc travels to Greece for his latest case.",
+      rating: 7.1
     }
   ];
 
-  // Randomly select and shuffle 5 movies
-  const shuffled = [...mockMovies].sort(() => 0.5 - Math.random());
+  // Filter out excluded movies, then randomly select and shuffle 5 movies
+  const availableMovies = mockMovies.filter(movie => !excludedTitles.includes(movie.title));
+  const shuffled = [...availableMovies].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 5);
 }
 
@@ -184,15 +239,19 @@ async function fetchMovieDetails(title, releaseYear) {
   return null;
 }
 
-async function generateRecommendationsGemini(preferences=[]) {
+async function generateRecommendationsGemini(preferences=[], excludedTitles=[]) {
   // Debug: indicate function invocation
-  console.log('generateRecommendationsGemini invoked. Preferences:', preferences);
+  console.log('generateRecommendationsGemini invoked. Preferences:', preferences, 'Excluded:', excludedTitles);
   try {
     const apiKey = GEMINI_API_KEY;
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const formattedPrefs = preferences.length ? `Here are the group preferences: \n- ${preferences.join('\n- ')}` : 'No explicit preferences were provided.';
+    
+    const excludedSection = excludedTitles.length 
+      ? `\n\nIMPORTANT: Do NOT recommend any of these movies that have already been suggested:\n- ${excludedTitles.join('\n- ')}`
+      : '';
 
     const prompt = `You are Movie Party AI, an expert movie-night matchmaker. Choose five films the group will most likely enjoy together. For each movie provide:
 - title
@@ -208,7 +267,7 @@ Respond ONLY with JSON in this form (max 5 items, no markdown):
   }
 ]
 
-${formattedPrefs}`;
+${formattedPrefs}${excludedSection}`;
 
     // Log the prompt for debugging
     console.log('Gemini prompt:', prompt);
@@ -234,32 +293,13 @@ ${formattedPrefs}`;
   } catch (err) {
     console.error('Gemini recommendation error', err);
   }
-  return getMockMovies();
+  return getMockMovies(excludedTitles);
 }
 
-async function getMovieRecommendations(preferences) {
-  return generateRecommendationsGemini(preferences);
+async function getMovieRecommendations(preferences, excludedTitles = []) {
+  return generateRecommendationsGemini(preferences, excludedTitles);
 }
 
-// FIRST_EDIT: helper to ensure movies are unique across a room's history
-async function getUniqueMovies({ existingTitles = new Set(), preferences = [], count = 1, maxAttempts = 5 }) {
-  const uniques = [];
-  const exclude = new Set(existingTitles);
-  let attempts = 0;
-  while (uniques.length < count && attempts < maxAttempts) {
-    // eslint-disable-next-line no-await-in-loop
-    const candidates = await getMovieRecommendations(preferences);
-    for (const movie of candidates) {
-      if (!exclude.has(movie.title)) {
-        exclude.add(movie.title);
-        uniques.push(movie);
-        if (uniques.length === count) break;
-      }
-    }
-    attempts += 1;
-  }
-  return uniques;
-}
 
 io.on('connection', (socket) => {
   console.log('Socket connected:', socket.id);
@@ -379,16 +419,10 @@ io.on('connection', (socket) => {
         .map(p => p.preferences);
 
       try {
-        const recommendations = await getUniqueMovies({
-          existingTitles: new Set(room.recommendationHistory || []),
-          preferences,
-          count: 5
-        });
-
-        if (recommendations.length < 5) {
-          io.to(roomCode).emit('recommendations-error', 'Unable to find enough unique movies');
-          return;
-        }
+        const excludedTitles = room.recommendationHistory || [];
+        console.log(`Regenerating recommendations, excluding: ${excludedTitles.join(', ')}`);
+        
+        const recommendations = await getMovieRecommendations(preferences, excludedTitles);
 
         room.regenerateCount += 1;
         room.recommendations = recommendations;
@@ -431,11 +465,11 @@ io.on('connection', (socket) => {
       .map(p => p.preferences);
 
     try {
-      const [newMovie] = await getUniqueMovies({
-        existingTitles: new Set(room.recommendationHistory || []),
-        preferences,
-        count: 1
-      });
+      const excludedTitles = room.recommendationHistory || [];
+      console.log(`Rerolling movie at index ${movieIndex}, excluding: ${excludedTitles.join(', ')}`);
+      
+      const newRecommendations = await getMovieRecommendations(preferences, excludedTitles);
+      const newMovie = newRecommendations[0]; // Take first recommendation
 
       if (!newMovie) {
         io.to(roomCode).emit('recommendations-error', 'Unable to find a unique movie');
