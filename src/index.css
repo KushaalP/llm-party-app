@@ -57,7 +57,6 @@ body {
 
 .card:hover {
   background: #1a1a1a;
-  border-color: #1db954;
   box-shadow: 0 8px 32px rgba(29, 185, 84, 0.2);
   transform: translateY(-2px);
 }
