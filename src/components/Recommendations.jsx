@@ -52,10 +52,10 @@ export default function Recommendations({
           <button
             onClick={onRegenerate}
             disabled={!canRegenerate || loadingIndex !== null}
-            className={`flex items-center gap-2 btn btn-secondary px-6 py-2 ${!canRegenerate || loadingIndex !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`flex items-center justify-center btn btn-secondary p-2 md:px-6 md:py-2 gap-0 md:gap-2 ${!canRegenerate || loadingIndex !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <RefreshCw className="w-4 h-4" />
-            <span>Regenerate All</span>
+            <RefreshCw className="w-6 h-6 md:w-4 md:h-4" />
+            <span className="hidden md:block">Regenerate All</span>
           </button>
         )}
       </div>
