@@ -11,6 +11,8 @@ html, body {
   height: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -21,6 +23,8 @@ body {
 
 #root {
   min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* Spotify-like styling */
@@ -791,6 +795,23 @@ body {
 }
 
 @media (max-width: 767px) {
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .container {
+    padding: 0 16px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  
   .mobile-card-info {
     padding: 16px;
   }
