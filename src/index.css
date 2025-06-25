@@ -847,3 +847,13 @@ body {
   animation: dotPulse 1s steps(4, end) infinite;
   vertical-align: middle;
 }
+
+/* Movie poster carousel animation */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
