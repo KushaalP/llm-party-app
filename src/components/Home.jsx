@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { Film } from 'lucide-react'
+import { moviePosters } from '../data/moviePosters'
 
 const API_BASE = '/api'
 
@@ -17,8 +18,25 @@ export default function Home() {
   const line1 = "45 minutes browsing. 5 people arguing. 0 movies watched."
   const line2Full = "Let's fix that in 2 minutes."
   const [typedLine2, setTypedLine2] = useState('')
+  const [carouselPaused, setCarouselPaused] = useState(false)
+  const [scrollTimeout, setScrollTimeout] = useState(null)
 
-  
+  const handleScrollEnd = () => {
+    if (scrollTimeout) {
+      clearTimeout(scrollTimeout)
+    }
+    const timeout = setTimeout(() => {
+      setCarouselPaused(false)
+    }, 2000)
+    setScrollTimeout(timeout)
+  }
+
+  const handleCarouselInteraction = () => {
+    setCarouselPaused(true)
+    if (scrollTimeout) {
+      clearTimeout(scrollTimeout)
+    }
+  }
 
   const handleCreateRoom = async () => {
     setIsCreating(true)
@@ -222,6 +240,64 @@ export default function Home() {
           </div>
         </div>
         
+        {/* Movie Poster Carousel - Mobile only */}
+        <div className="block md:hidden" style={{ marginTop: '2rem' }}>
+          <div 
+            style={{ 
+              overflow: carouselPaused ? 'auto' : 'hidden', 
+              position: 'relative', 
+              height: '240px',
+              cursor: carouselPaused ? 'grab' : 'default'
+            }}
+            onTouchStart={handleCarouselInteraction}
+            onMouseDown={handleCarouselInteraction}
+            onScroll={handleScrollEnd}
+            onTouchEnd={handleScrollEnd}
+          >
+            <div style={{
+              display: 'flex',
+              animation: carouselPaused ? 'none' : 'scroll-left 12s linear infinite',
+              gap: '12px',
+              height: '100%',
+              width: '200%'
+            }}>
+              {/* Duplicate the array twice for seamless loop */}
+              {[...moviePosters, ...moviePosters].map((movie, index) => (
+                <div
+                  key={`${movie.title}-${index}`}
+                  style={{
+                    minWidth: '140px',
+                    height: '210px',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                    transform: 'scale(0.95)',
+                    transition: 'transform 0.3s ease',
+                    filter: 'brightness(0.8) saturate(0.9)',
+                    userSelect: 'none',
+                    pointerEvents: carouselPaused ? 'auto' : 'none'
+                  }}
+                >
+                  <img
+                    src={movie.poster}
+                    alt={movie.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      userSelect: 'none'
+                    }}
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/140x210/333333/666666?text=Movie'
+                    }}
+                    draggable={!carouselPaused}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Mobile Tagline - Below carousel, hidden initially */}
           <div className="text-center mt-16 mb-8">
@@ -236,5 +312,6 @@ export default function Home() {
           </div>
         </div>
       </div>
+    </div>
   )
 }
