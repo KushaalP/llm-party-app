@@ -109,14 +109,7 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [])
 
-  // Redirect to existing room if participant data is present
-  useEffect(() => {
-    const storedRoomCode = localStorage.getItem('roomCode')
-    const storedParticipantId = localStorage.getItem('participantId')
-    if (storedRoomCode && storedParticipantId) {
-      navigate(`/room/${storedRoomCode}`)
-    }
-  }, [navigate])
+  
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
