@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { Film } from 'lucide-react'
-import { moviePosters } from '../data/moviePosters'
+import MobilePosterCarousel from './homeComponents/MobilePosterCarousel'
+import HomeCard from './homeComponents/HomeCard'
 
 const API_BASE = '/api'
 
@@ -18,25 +19,6 @@ export default function Home() {
   const line1 = "45 minutes browsing. 5 people arguing. 0 movies watched."
   const line2Full = "Let's fix that in 2 minutes."
   const [typedLine2, setTypedLine2] = useState('')
-  const [carouselPaused, setCarouselPaused] = useState(false)
-  const [scrollTimeout, setScrollTimeout] = useState(null)
-
-  const handleScrollEnd = () => {
-    if (scrollTimeout) {
-      clearTimeout(scrollTimeout)
-    }
-    const timeout = setTimeout(() => {
-      setCarouselPaused(false)
-    }, 2000)
-    setScrollTimeout(timeout)
-  }
-
-  const handleCarouselInteraction = () => {
-    setCarouselPaused(true)
-    if (scrollTimeout) {
-      clearTimeout(scrollTimeout)
-    }
-  }
 
   const handleCreateRoom = async () => {
     setIsCreating(true)
@@ -109,8 +91,6 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [])
 
-  
-
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       {/* iOS-style Header */}
@@ -144,88 +124,19 @@ export default function Home() {
       <div style={{ paddingTop: '120px', paddingLeft: '24px', paddingRight: '24px' }}>
         <div className="max-w-md mx-auto">
           {/* Main Card */}
-          <div className="card space-y-4">
-            {/* Create Form */}
-            <input
-              type="text"
-              placeholder="Your name"
-              value={createName}
-              onChange={(e) => setCreateName(e.target.value)}
-              maxLength={20}
-              className="input text-center"
-            />
-            <button
-              onClick={handleCreateRoom}
-              disabled={isCreating || !createName.trim()}
-              className="btn btn-primary w-full text-lg"
-            >
-              {isCreating ? (
-                <>
-                  <Film className="w-4 h-4 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                'Create New Party'
-              )}
-            </button>
-
-            {/* Divider */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ flex: '1', borderTop: '1px solid #404040' }}></div>
-              <span style={{
-                background: 'rgba(64, 64, 64, 0.5)',
-                color: '#9ca3af',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: '600',
-                letterSpacing: '0.05em'
-              }}>OR</span>
-              <div style={{ flex: '1', borderTop: '1px solid #404040' }}></div>
-            </div>
-
-            {/* Join Form */}
-            <input
-              type="text"
-              placeholder="Party code (e.g. ABC123)"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              maxLength={6}
-              className="input text-center font-mono tracking-wider"
-            />
-            <input
-              type="text"
-              placeholder="Your name"
-              value={joinName}
-              onChange={(e) => setJoinName(e.target.value)}
-              maxLength={20}
-              className="input text-center"
-            />
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                handleJoinRoom(e)
-              }}
-              disabled={isJoining || !joinCode.trim() || !joinName.trim()}
-              className="btn btn-secondary w-full text-lg"
-            >
-              {isJoining ? (
-                <>
-                  <Film className="w-4 h-4 animate-spin" />
-                  Joining...
-                </>
-              ) : (
-                'Join Party'
-              )}
-            </button>
-
-            {/* Error */}
-            {error && (
-              <div className="bg-red-900/50 border border-red-500 rounded-lg p-4 text-red-300 text-center text-sm">
-                {error}
-              </div>
-            )}
-          </div>
+          <HomeCard
+            createName={createName}
+            setCreateName={setCreateName}
+            isCreating={isCreating}
+            handleCreateRoom={handleCreateRoom}
+            joinCode={joinCode}
+            setJoinCode={setJoinCode}
+            joinName={joinName}
+            setJoinName={setJoinName}
+            isJoining={isJoining}
+            handleJoinRoom={handleJoinRoom}
+            error={error}
+          />
 
           {/* Desktop Tagline - Hidden on mobile */}
           <div className="hidden md:block text-center mt-10">
@@ -240,77 +151,8 @@ export default function Home() {
           </div>
         </div>
         
-        {/* Movie Poster Carousel - Mobile only */}
-        <div className="block md:hidden" style={{ marginTop: '2rem' }}>
-          <div 
-            style={{ 
-              overflow: carouselPaused ? 'auto' : 'hidden', 
-              position: 'relative', 
-              height: '240px',
-              cursor: carouselPaused ? 'grab' : 'default'
-            }}
-            onTouchStart={handleCarouselInteraction}
-            onMouseDown={handleCarouselInteraction}
-            onScroll={handleScrollEnd}
-            onTouchEnd={handleScrollEnd}
-          >
-            <div style={{
-              display: 'flex',
-              animation: carouselPaused ? 'none' : 'scroll-left 12s linear infinite',
-              gap: '12px',
-              height: '100%',
-              width: '200%'
-            }}>
-              {/* Duplicate the array twice for seamless loop */}
-              {[...moviePosters, ...moviePosters].map((movie, index) => (
-                <div
-                  key={`${movie.title}-${index}`}
-                  style={{
-                    minWidth: '140px',
-                    height: '210px',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                    transform: 'scale(0.95)',
-                    transition: 'transform 0.3s ease',
-                    filter: 'brightness(0.8) saturate(0.9)',
-                    userSelect: 'none',
-                    pointerEvents: carouselPaused ? 'auto' : 'none'
-                  }}
-                >
-                  <img
-                    src={movie.poster}
-                    alt={movie.title}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      borderRadius: '8px',
-                      userSelect: 'none'
-                    }}
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/140x210/333333/666666?text=Movie'
-                    }}
-                    draggable={!carouselPaused}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile Tagline - Below carousel, hidden initially */}
-          <div className="text-center mt-16 mb-8">
-            <div className="space-y-1" style={{ minHeight: '48px' }}>
-              <p className="text-gray-400 text-sm">
-                {line1}
-              </p>
-              <p className="text-white text-lg">
-                {typedLine2}
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Mobile Carousel & Tagline */}
+        <MobilePosterCarousel line1={line1} typedLine2={typedLine2} />
       </div>
     </div>
   )
