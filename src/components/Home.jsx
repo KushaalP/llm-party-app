@@ -4,6 +4,7 @@ import axios from 'axios'
 import { Film } from 'lucide-react'
 import MobilePosterCarousel from './homeComponents/MobilePosterCarousel'
 import HomeCard from './homeComponents/HomeCard'
+import SwipeDeck from './homeComponents/SwipeDeck'
 
 const API_BASE = '/api'
 
@@ -149,10 +150,12 @@ export default function Home() {
               </p>
             </div>
           </div>
+
+          {/* Swipe Deck */}
+          <div className="mt-6 mb-4">
+            <SwipeDeck />
+          </div>
         </div>
-        
-        {/* Mobile Carousel & Tagline */}
-        <MobilePosterCarousel line1={line1} typedLine2={typedLine2} />
       </div>
     </div>
   )
