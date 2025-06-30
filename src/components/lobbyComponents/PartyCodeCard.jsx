@@ -1,4 +1,5 @@
 import React from 'react'
+import { Cake, Copy as CopyIcon, Check } from 'lucide-react'
 
 export default function PartyCodeCard({ code }) {
   const [copied, setCopied] = React.useState(false)
@@ -28,12 +29,23 @@ export default function PartyCodeCard({ code }) {
 
   return (
     <div className="card text-center hover-glow">
-      <h2 className="text-xl font-semibold text-white mb-4">🎬 Party Code</h2>
+      <h2 className="text-xl font-semibold text-white mb-4 flex items-center justify-center gap-2">
+        <Cake size={20} />
+        Party Code
+      </h2>
       <div className="text-5xl font-mono font-bold gradient-text tracking-wider mb-6 room-code">
         {code}
       </div>
       <button onClick={copyRoomCode} className="btn btn-secondary">
-        {copied ? '✅ Copied!' : '📋 Copy Code'}
+        {copied ? (
+          <>
+            <Check size={16} /> Copied!
+          </>
+        ) : (
+          <>
+            <CopyIcon size={16} /> Copy Code
+          </>
+        )}
       </button>
     </div>
   )

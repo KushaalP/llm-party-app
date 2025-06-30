@@ -1,6 +1,7 @@
 import React from 'react'
-import PartyCodeCard from './lobbyCopmonents/PartyCodeCard'
-import ParticipantsCard from './lobbyCopmonents/ParticipantsCard'
+import { Clapperboard } from 'lucide-react'
+import PartyCodeCard from './lobbyComponents/PartyCodeCard'
+import ParticipantsCard from './lobbyComponents/ParticipantsCard'
 
 export default function Lobby({ room, isHost, onStartPreferences, onKickParticipant }) {
   return (
@@ -27,7 +28,9 @@ export default function Lobby({ room, isHost, onStartPreferences, onKickParticip
                 transition: 'all 0.2s ease'
               }}
             >
-              🎬 Start Movie Selection
+              <>
+                <Clapperboard size={20} /> Start Movie Selection
+              </>
             </button>
             {room.participants.length < 2 && (
               <p className="text-gray-400 text-sm mt-3">

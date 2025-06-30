@@ -77,7 +77,7 @@ export default function Recommendations({
 
       <div className="mt-8 sm:mt-12 text-center">
         <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 mx-2 sm:mx-0">
-          <h3 className="text-base sm:text-lg font-semibold mb-2">Enjoy your movie night! 🎬</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Enjoy your movie night!</h3>
           <p className="text-gray-400 text-sm sm:text-base">
             These recommendations were carefully selected based on everyone's preferences. 
             Have a great time watching together!

@@ -1,4 +1,5 @@
 import React from 'react'
+import { CheckCircle2, Hourglass } from 'lucide-react'
 
 export default function ReadyStatusCard({
   readyCount,
@@ -27,7 +28,15 @@ export default function ReadyStatusCard({
             : 'bg-gray-600 text-gray-400 cursor-not-allowed'
         }`}
       >
-        {isReady ? '✅ Ready!' : '⏳ Mark as Ready'}
+        {isReady ? (
+          <>
+            <CheckCircle2 size={18} className="inline-block mr-1 -mt-1" /> Ready!
+          </>
+        ) : (
+          <>
+            <Hourglass size={18} className="inline-block mr-1 -mt-1" /> Mark as Ready
+          </>
+        )}
       </button>
 
       {userPreferencesLength === 0 && (

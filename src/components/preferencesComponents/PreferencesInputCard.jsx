@@ -1,4 +1,5 @@
 import React from 'react'
+import { Clapperboard, X, Lightbulb, ChevronUp } from 'lucide-react'
 
 export default function PreferencesInputCard({
   userPreferences,
@@ -14,7 +15,10 @@ export default function PreferencesInputCard({
 }) {
   return (
     <div className="card">
-      <h2 className="text-2xl font-semibold text-white mb-6">🎬 Share Your Movie Preferences</h2>
+      <h2 className="text-2xl font-semibold text-white mb-6">
+        <Clapperboard size={22} className="inline-block mr-2 -mt-1" />
+        Share Your Movie Preferences
+      </h2>
 
       {/* Current Preferences */}
       {userPreferences.length > 0 && (
@@ -28,7 +32,7 @@ export default function PreferencesInputCard({
                   onClick={() => removePreference(index)}
                   className="hover:text-red-600 transition-colors ml-1 font-bold"
                 >
-                  ✕
+                  <X size={14} />
                 </button>
               </div>
             ))}
@@ -64,7 +68,15 @@ export default function PreferencesInputCard({
               onClick={() => setShowSuggestions(!showSuggestions)}
               className="btn btn-secondary text-sm px-4 py-2 mb-4"
             >
-              {showSuggestions ? '🔼 Hide Suggestions' : '💡 Need Inspiration?'}
+              {showSuggestions ? (
+                <>
+                  <ChevronUp size={14} className="inline-block mr-1 -mt-1" /> Hide Suggestions
+                </>
+              ) : (
+                <>
+                  <Lightbulb size={14} className="inline-block mr-1 -mt-1" /> Need Inspiration?
+                </>
+              )}
             </button>
 
             {showSuggestions && (
