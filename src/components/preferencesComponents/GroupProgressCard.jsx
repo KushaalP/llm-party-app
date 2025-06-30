@@ -8,11 +8,11 @@ export default function GroupProgressCard({ room, currentParticipant }) {
         {room.participants.map((participant) => (
           <div
             key={participant.id}
-            className="flex items-center justify-between p-3 bg-gray-700 rounded-lg"
+            className="flex items-center justify-between p-4 bg-gray-700 rounded-xl min-h-[72px]"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4 flex-1">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm ${
+                className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-lg ${
                   participant.isReady ? 'bg-green-500' : 'bg-gray-500'
                 }`}
               >
