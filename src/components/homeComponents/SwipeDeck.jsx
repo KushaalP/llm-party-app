@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import styles from './swipedeck.module.css'
-import { Film, Users, SlidersHorizontal, Sparkles } from 'lucide-react'
+import { Film, Users, SlidersHorizontal, Sparkles, PartyPopper } from 'lucide-react'
 
 // Guided onboarding steps for users
 const INITIAL_CARDS = [
@@ -28,6 +28,12 @@ const INITIAL_CARDS = [
     icon: Sparkles,
     bg: 'linear-gradient(135deg, #6b21a8 0%, #d946ef 100%)',
   },
+  {
+    title: 'Now create your first party!',
+    description: '',
+    icon: PartyPopper,
+    bg: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+  },
 ]
 
 export default function SwipeDeck() {
@@ -41,15 +47,8 @@ export default function SwipeDeck() {
   const pendingDragRef = useRef(drag)
 
   if (cards.length === 0) {
-    return (
-      <div className={styles.wrapper}>
-        <div className={styles.container}>
-          <div className={styles.emptyMessage}>
-            Now create your first party!
-          </div>
-        </div>
-      </div>
-    )
+    setCards(INITIAL_CARDS)
+    setShowHint(true)
   }
 
   const handlePointerDown = (e) => {
@@ -89,7 +88,14 @@ export default function SwipeDeck() {
 
       // remove the card after the animation finishes
       setTimeout(() => {
-        setCards((prev) => prev.slice(1))
+        setCards((prev) => {
+          const next = prev.slice(1)
+          if (next.length === 0) {
+            setShowHint(true)
+            return INITIAL_CARDS
+          }
+          return next
+        })
         setDrag({ x: 0, y: 0, isDragging: false })
       }, 300)
     } else {
