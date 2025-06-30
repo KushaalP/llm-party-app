@@ -14,7 +14,7 @@ export default function HomeCard({
   error,
 }) {
   return (
-    <div className="card space-y-4">
+    <div className="card space-y-4 mt-negative">
       {/* Create Form */}
       <input
         type="text"

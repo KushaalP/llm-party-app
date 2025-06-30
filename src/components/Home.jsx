@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { Film } from 'lucide-react'
-import MobilePosterCarousel from './homeComponents/MobilePosterCarousel'
 import HomeCard from './homeComponents/HomeCard'
 import SwipeDeck from './homeComponents/SwipeDeck'
 

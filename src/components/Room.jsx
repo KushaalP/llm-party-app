@@ -255,9 +255,9 @@ export default function Room() {
         <div className="text-center mb-8 relative">
           <button
             onClick={handleLeaveRoom}
-            className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2"
+            className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-4 h-4 " />
             Leave Room
           </button>
           
