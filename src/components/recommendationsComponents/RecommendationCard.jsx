@@ -9,29 +9,30 @@ export default function RecommendationCard({
   toggleMobileExpansion,
   formatRating,
 }) {
+  const hasPoster = Boolean(movie.poster)
+
   return (
     <div>
       {/* Mobile Layout */}
       <div className="md:hidden bg-gray-800 rounded-2xl overflow-hidden transition-all duration-300 ease-in-out">
         {/* Mobile Poster and Basic Info (tap to expand) */}
         <div className="cursor-pointer" onClick={() => toggleMobileExpansion(index)}>
-          <div className="relative">
-            {loadingIndex === index && (
-              <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-20">
-                <Film className="w-16 h-16 animate-spin text-white opacity-90" />
-              </div>
-            )}
-            <img
-              src={
-                movie.poster ||
-                'https://via.placeholder.com/342x513?text=No+Image'
-              }
-              alt={`${movie.title} poster`}
-              className={`w-full h-64 object-cover transition-all duration-300 ${
-                loadingIndex === index ? 'filter grayscale brightness-50' : ''
-              }`}
-            />
-          </div>
+          {hasPoster && (
+            <div className="relative">
+              {loadingIndex === index && (
+                <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-20">
+                  <Film className="w-16 h-16 animate-spin text-white opacity-90" />
+                </div>
+              )}
+              <img
+                src={movie.poster}
+                alt={`${movie.title} poster`}
+                className={`w-full h-64 object-cover transition-all duration-300 ${
+                  loadingIndex === index ? 'filter grayscale brightness-50' : ''
+                }`}
+              />
+            </div>
+          )}
 
           <div className="p-4 mobile-card-info">
             <div className="flex items-center gap-3 mb-2 title-row">
@@ -98,23 +99,22 @@ export default function RecommendationCard({
       {/* Desktop Layout */}
       <div className="hidden md:block bg-gray-800 rounded-2xl overflow-hidden hover:bg-gray-750 transition-colors relative">
         <div className="flex flex-row">
-          <div className="relative w-48 flex-shrink-0 group">
-            {loadingIndex === index && (
-              <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-20">
-                <Film className="w-32 h-32 animate-spin text-white opacity-90" />
-              </div>
-            )}
-            <img
-              src={
-                movie.poster ||
-                'https://via.placeholder.com/342x513?text=No+Image'
-              }
-              alt={`${movie.title} poster`}
-              className={`w-full h-full object-cover transition-all duration-300 ${
-                loadingIndex === index ? 'filter grayscale brightness-50' : ''
-              }`}
-            />
-          </div>
+          {hasPoster && (
+            <div className="relative w-48 flex-shrink-0 group">
+              {loadingIndex === index && (
+                <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-20">
+                  <Film className="w-32 h-32 animate-spin text-white opacity-90" />
+                </div>
+              )}
+              <img
+                src={movie.poster}
+                alt={`${movie.title} poster`}
+                className={`w-full h-full object-cover transition-all duration-300 ${
+                  loadingIndex === index ? 'filter grayscale brightness-50' : ''
+                }`}
+              />
+            </div>
+          )}
 
           <div className="flex-1 p-6">
             <div className="flex items-start justify-between mb-4">
