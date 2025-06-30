@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function GroupProgressCard({ room, currentParticipant }) {
+export default function GroupProgressCard({ room, currentParticipant, isHost, onKickParticipant }) {
   return (
     <div className="card">
       <h3 className="text-lg font-semibold text-white mb-4">Group Progress</h3>
@@ -27,7 +27,9 @@ export default function GroupProgressCard({ room, currentParticipant }) {
                 </p>
                 <div className="flex items-center gap-2 text-xs">
                   {participant.id === room.host && (
-                    <span className="badge badge-host">👑 Host</span>
+                    <span className="badge badge-host flex items-center gap-1">
+                      👑 Host
+                    </span>
                   )}
                   <span
                     className={
@@ -48,6 +50,11 @@ export default function GroupProgressCard({ room, currentParticipant }) {
                 </div>
               </div>
             </div>
+            {isHost && participant.id !== room.host && (
+              <button onClick={() => onKickParticipant(participant.id)} className="remove-btn flex items-center gap-1">
+                Remove
+              </button>
+            )}
           </div>
         ))}
       </div>

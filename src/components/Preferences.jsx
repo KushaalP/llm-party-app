@@ -18,7 +18,7 @@ const SUGGESTION_PROMPTS = [
   "Movies with amazing cinematography"
 ]
 
-export default function Preferences({ room, currentParticipant, onSubmitPreferences, onSetReady }) {
+export default function Preferences({ room, currentParticipant, onSubmitPreferences, onSetReady, isHost, onKickParticipant }) {
   const [userPreferences, setUserPreferences] = useState([])
   const [currentInput, setCurrentInput] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -89,7 +89,7 @@ export default function Preferences({ room, currentParticipant, onSubmitPreferen
         />
 
         {/* Participants Status */}
-        <GroupProgressCard room={room} currentParticipant={currentParticipant} />
+        <GroupProgressCard room={room} currentParticipant={currentParticipant} isHost={isHost} onKickParticipant={onKickParticipant} />
       </div>
     </div>
   )

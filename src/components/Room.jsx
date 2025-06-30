@@ -288,6 +288,7 @@ export default function Room() {
             onSubmitPreferences={handlePreferencesSubmit}
             onSetReady={handleSetReady}
             isHost={isHost}
+            onKickParticipant={handleKickParticipant}
           />
         )}
 
