@@ -162,7 +162,7 @@ Respond ONLY with JSON in this form (max 15 items, no markdown):
     "title": "Movie Title",
     "year": 1994,
     "reasoning": "Why it fits...",
-    "participantMatchScore": {${participantNames.map(name => `"${name}": 90`).join(', ')}}
+    "participantMatchScore": {${participantNames.map(name => `"${name}": number out of 100 indicating how much this movie satisfies their preferences`).join(', ')}}
   }
 ]
 
@@ -172,6 +172,7 @@ ${formattedPrefs}${excludedSection}${participantSection}`;
     console.log('Gemini prompt:', prompt);
 
     const result = await model.generateContent(prompt, { requestOptions: { apiVersion: 'v1' } });
+    console.log('Gemini result:', result);
     const text = result?.response?.text?.() || '';
     const jsonStart = text.indexOf('[');
     const jsonEnd = text.lastIndexOf(']') + 1;
