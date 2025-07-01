@@ -130,15 +130,19 @@ async function fetchMovieDetails(title, releaseYear) {
   return null;
 }
 
-async function generateRecommendationsGemini(preferences=[], excludedTitles=[], participants=[]) {
+async function generateRecommendationsGemini(excludedTitles=[], participants=[]) {
   // Debug: indicate function invocation
-  console.log('generateRecommendationsGemini invoked. Preferences:', preferences, 'Excluded:', excludedTitles, 'Participants:', participants.map(p => p.name));
+  console.log('generateRecommendationsGemini invoked. Excluded:', excludedTitles, 'Participants:', participants.map(p => p.name));
   try {
     const apiKey = GEMINI_API_KEY;
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-    const formattedPrefs = preferences.length ? `Here are the group preferences: \n- ${preferences.join('\n- ')}` : 'No explicit preferences were provided.';
+    // Format individual participant preferences
+    const participantsWithPrefs = participants.filter(p => p.preferences && p.preferences.trim());
+    const formattedPrefs = participantsWithPrefs.length 
+      ? `Individual participant preferences:\n${participantsWithPrefs.map(p => `- ${p.name}: ${p.preferences}`).join('\n')}`
+      : 'No explicit preferences were provided.';
     
     const excludedSection = excludedTitles.length 
       ? `\n\nIMPORTANT: Do NOT recommend any of these movies that have already been suggested:\n- ${excludedTitles.join('\n- ')}`
@@ -147,7 +151,7 @@ async function generateRecommendationsGemini(preferences=[], excludedTitles=[], 
     // Create participant names mapping for the prompt
     const participantNames = participants.map(p => p.name);
     const participantSection = participantNames.length 
-      ? `\n\nParticipants: ${participantNames.join(', ')}`
+      ? `\n\nAll participants: ${participantNames.join(', ')}`
       : '';
 
     const prompt = `You are Movie Party AI, an expert movie-night matchmaker. Choose fifteen films the group will most likely enjoy together. For each movie provide:
@@ -197,8 +201,8 @@ ${formattedPrefs}${excludedSection}${participantSection}`;
   throw new Error('No recommendations generated');
 }
 
-async function getMovieRecommendations(preferences, excludedTitles = [], participants = []) {
-  return generateRecommendationsGemini(preferences, excludedTitles, participants);
+async function getMovieRecommendations(excludedTitles = [], participants = []) {
+  return generateRecommendationsGemini(excludedTitles, participants);
 }
 
 
@@ -272,11 +276,7 @@ io.on('connection', (socket) => {
           room.locked = true;
           io.to(roomCode).emit('generating-recommendations');
 
-          const preferences = room.participants
-            .filter(p => p.preferences.trim())
-            .map(p => p.preferences);
-
-          getMovieRecommendations(preferences, [], room.participants)
+          getMovieRecommendations([], room.participants)
             .then(recommendations => {
               room.recommendations = recommendations;
               room.recommendationHistory = [
@@ -315,15 +315,11 @@ io.on('connection', (socket) => {
 
       io.to(roomCode).emit('generating-recommendations');
 
-      const preferences = room.participants
-        .filter(p => p.preferences.trim())
-        .map(p => p.preferences);
-
       try {
         const excludedTitles = room.recommendationHistory || [];
         console.log(`Regenerating recommendations, excluding: ${excludedTitles.join(', ')}`);
         
-        const recommendations = await getMovieRecommendations(preferences, excludedTitles, room.participants);
+        const recommendations = await getMovieRecommendations(excludedTitles, room.participants);
 
         room.regenerateCount += 1;
         room.recommendations = recommendations;
@@ -361,15 +357,11 @@ io.on('connection', (socket) => {
       return;
     }
 
-    const preferences = room.participants
-      .filter(p => p.preferences.trim())
-      .map(p => p.preferences);
-
     try {
       const excludedTitles = room.recommendationHistory || [];
       console.log(`Rerolling movie at index ${movieIndex}, excluding: ${excludedTitles.join(', ')}`);
       
-      const newRecommendations = await getMovieRecommendations(preferences, excludedTitles, room.participants);
+      const newRecommendations = await getMovieRecommendations(excludedTitles, room.participants);
       const newMovie = newRecommendations[0]; // Take first recommendation
 
       if (!newMovie) {
