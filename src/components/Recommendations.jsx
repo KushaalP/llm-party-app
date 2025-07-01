@@ -46,16 +46,13 @@ export default function Recommendations({
 
   // Swipe handlers - using same mechanics as SwipeDeck
   const handlePointerDown = (e) => {
-    // Don't start drag if card is flipped
-    if (expandedMobile.has(currentIndex)) return
-    
     e.target.setPointerCapture(e.pointerId)
     startPoint.current = { x: e.clientX, y: e.clientY }
     setDrag({ x: 0, y: 0, isDragging: true })
   }
 
   const handlePointerMove = (e) => {
-    if (!drag.isDragging || expandedMobile.has(currentIndex)) return
+    if (!drag.isDragging) return
     const dx = e.clientX - startPoint.current.x
     const dy = e.clientY - startPoint.current.y
 
