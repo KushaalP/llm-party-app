@@ -59,19 +59,13 @@ export default function Recommendations({
 
   const handlePointerMove = (e) => {
     if (!drag.isDragging || expandedMobile.has(currentIndex)) return
-    
-    // Legacy WebKit (< iOS 13.4) support
-    if (e.pointerType === 'touch') {
-      e.preventDefault()
-    }
-    
     const dx = e.clientX - startPoint.current.x
     const dy = e.clientY - startPoint.current.y
 
     // Store the latest drag values
     pendingDragRef.current = { x: dx, y: dy, isDragging: true }
 
-    // Micro-optimize: only schedule RAF updates, don't call setDrag immediately
+    // Only schedule a state update if we don't already have one queued
     if (!frameRef.current) {
       frameRef.current = requestAnimationFrame(() => {
         setDrag(pendingDragRef.current)
