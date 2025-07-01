@@ -261,14 +261,15 @@ export default function Room() {
             Leave Room
           </button>
           
-          <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-            Room <span className="gradient-text">{roomCode}</span>
-          </h1>
+          {phase !== 'results' && (
+            <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+              Room <span className="gradient-text">{roomCode}</span>
+            </h1>
+          )}
           <p className="text-white/70 text-lg font-medium">
             {phase === 'lobby' && 'Waiting for everyone to join'}
             {phase === 'preferences' && 'Share your movie preferences'}
             {phase === 'generating' && 'AI is finding perfect movies for your group...'}
-            {phase === 'results' && 'Here are your personalized recommendations!'}
           </p>
         </div>
 
