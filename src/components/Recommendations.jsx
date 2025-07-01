@@ -156,6 +156,12 @@ export default function Recommendations({
             const rotate = isTop ? `rotate(${drag.x / 10}deg)` : `rotate(0deg)`
             const scale = isTop ? 1 : 1 - i * 0.04
             const transition = drag.isDragging && isTop ? 'none' : 'transform 0.3s ease-out'
+            
+            // Calculate swipe feedback
+            const threshold = 120
+            const swipeProgress = isTop ? Math.min(Math.abs(drag.x) / threshold, 1) : 0
+            const isSwipingLeft = drag.x < -60
+            const showSwipeHint = swipeProgress > 0.5
 
             return (
               <div
@@ -179,6 +185,15 @@ export default function Recommendations({
                   toggleMobileExpansion={toggleMobileExpansion}
                   formatRating={formatRating}
                 />
+                
+                {/* Swipe Feedback Overlay */}
+                {isTop && showSwipeHint && (
+                  <div className={`swipe-feedback-overlay ${isSwipingLeft ? 'swipe-left' : 'swipe-right'}`}>
+                    <div className="swipe-feedback-icon">
+                      {isSwipingLeft ? '✖' : '♥'}
+                    </div>
+                  </div>
+                )}
               </div>
             )
           })}
