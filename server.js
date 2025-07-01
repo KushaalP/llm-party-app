@@ -93,7 +93,7 @@ app.get('/api/room/:code', (req, res) => {
   res.json(room);
 });
 
-function getMockMovies(excludedTitles = []) {
+function getMockMovies(excludedTitles = [], participants = []) {
   // Mock movie recommendations with various data
   const mockMovies = [
     {
@@ -197,10 +197,22 @@ function getMockMovies(excludedTitles = []) {
     }
   ];
 
-  // Filter out excluded movies, then randomly select and shuffle 5 movies
+  // Create mock participant match scores using actual participant names
+  const createMockMatchScore = () => {
+    const score = {};
+    participants.forEach(participant => {
+      score[participant.name] = Math.floor(Math.random() * 41) + 60; // Random score between 60-100
+    });
+    return score;
+  };
+
+  // Filter out excluded movies, then randomly select and shuffle 15 movies
   const availableMovies = mockMovies.filter(movie => !excludedTitles.includes(movie.title));
   const shuffled = [...availableMovies].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 5);
+  return shuffled.slice(0, 15).map(movie => ({
+    ...movie,
+    participantMatchScore: createMockMatchScore()
+  }));
 }
 
 async function fetchMovieDetails(title, releaseYear) {
@@ -239,9 +251,9 @@ async function fetchMovieDetails(title, releaseYear) {
   return null;
 }
 
-async function generateRecommendationsGemini(preferences=[], excludedTitles=[]) {
+async function generateRecommendationsGemini(preferences=[], excludedTitles=[], participants=[]) {
   // Debug: indicate function invocation
-  console.log('generateRecommendationsGemini invoked. Preferences:', preferences, 'Excluded:', excludedTitles);
+  console.log('generateRecommendationsGemini invoked. Preferences:', preferences, 'Excluded:', excludedTitles, 'Participants:', participants.map(p => p.name));
   try {
     const apiKey = GEMINI_API_KEY;
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -253,21 +265,29 @@ async function generateRecommendationsGemini(preferences=[], excludedTitles=[]) 
       ? `\n\nIMPORTANT: Do NOT recommend any of these movies that have already been suggested:\n- ${excludedTitles.join('\n- ')}`
       : '';
 
-    const prompt = `You are Movie Party AI, an expert movie-night matchmaker. Choose five films the group will most likely enjoy together. For each movie provide:
+    // Create participant names mapping for the prompt
+    const participantNames = participants.map(p => p.name);
+    const participantSection = participantNames.length 
+      ? `\n\nParticipants: ${participantNames.join(', ')}`
+      : '';
+
+    const prompt = `You are Movie Party AI, an expert movie-night matchmaker. Choose fifteen films the group will most likely enjoy together. For each movie provide:
 - title
 - year (numeric release year)
 - reasoning (2 short bullet points referencing the preferences)
+- participantMatchScore (object with participant names as keys and percentage scores as values, indicating how much each participant's preferences are satisfied by this movie)
 
-Respond ONLY with JSON in this form (max 5 items, no markdown):
+Respond ONLY with JSON in this form (max 15 items, no markdown):
 [
   {
     "title": "Movie Title",
     "year": 1994,
-    "reasoning": "Why it fits..."
+    "reasoning": "Why it fits...",
+    "participantMatchScore": {${participantNames.map(name => `"${name}": 90`).join(', ')}}
   }
 ]
 
-${formattedPrefs}${excludedSection}`;
+${formattedPrefs}${excludedSection}${participantSection}`;
 
     // Log the prompt for debugging
     console.log('Gemini prompt:', prompt);
@@ -281,23 +301,23 @@ ${formattedPrefs}${excludedSection}`;
 
     if (Array.isArray(parsed) && parsed.length) {
       // Enrich with TMDB
-      const enriched = await Promise.all(parsed.slice(0, 5).map(async (item) => {
+      const enriched = await Promise.all(parsed.slice(0, 15).map(async (item) => {
         const base = await fetchMovieDetails(item.title, item.year);
         if (base) {
-          return { ...base, reasoning: item.reasoning };
+          return { ...base, reasoning: item.reasoning, participantMatchScore: item.participantMatchScore };
         }
-        return { title: item.title, year: item.year, reasoning: item.reasoning };
+        return { title: item.title, year: item.year, reasoning: item.reasoning, participantMatchScore: item.participantMatchScore };
       }));
       return enriched;
     }
   } catch (err) {
     console.error('Gemini recommendation error', err);
   }
-  return getMockMovies(excludedTitles);
+  return getMockMovies(excludedTitles, participants);
 }
 
-async function getMovieRecommendations(preferences, excludedTitles = []) {
-  return generateRecommendationsGemini(preferences, excludedTitles);
+async function getMovieRecommendations(preferences, excludedTitles = [], participants = []) {
+  return generateRecommendationsGemini(preferences, excludedTitles, participants);
 }
 
 
@@ -375,7 +395,7 @@ io.on('connection', (socket) => {
             .filter(p => p.preferences.trim())
             .map(p => p.preferences);
 
-          getMovieRecommendations(preferences)
+          getMovieRecommendations(preferences, [], room.participants)
             .then(recommendations => {
               room.recommendations = recommendations;
               room.recommendationHistory = [
@@ -422,7 +442,7 @@ io.on('connection', (socket) => {
         const excludedTitles = room.recommendationHistory || [];
         console.log(`Regenerating recommendations, excluding: ${excludedTitles.join(', ')}`);
         
-        const recommendations = await getMovieRecommendations(preferences, excludedTitles);
+        const recommendations = await getMovieRecommendations(preferences, excludedTitles, room.participants);
 
         room.regenerateCount += 1;
         room.recommendations = recommendations;
@@ -468,7 +488,7 @@ io.on('connection', (socket) => {
       const excludedTitles = room.recommendationHistory || [];
       console.log(`Rerolling movie at index ${movieIndex}, excluding: ${excludedTitles.join(', ')}`);
       
-      const newRecommendations = await getMovieRecommendations(preferences, excludedTitles);
+      const newRecommendations = await getMovieRecommendations(preferences, excludedTitles, room.participants);
       const newMovie = newRecommendations[0]; // Take first recommendation
 
       if (!newMovie) {

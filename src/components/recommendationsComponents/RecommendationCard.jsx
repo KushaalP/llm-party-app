@@ -83,13 +83,33 @@ export default function RecommendationCard({
             )}
 
             {movie.reasoning && (
-              <div>
+              <div className="mb-4">
                 <h4 className="text-xs font-semibold text-gray-400 mb-2 tracking-wider uppercase">
                   Why We Picked This
                 </h4>
                 <p className="text-gray-300 text-sm leading-relaxed">
                   {movie.reasoning}
                 </p>
+              </div>
+            )}
+
+            {movie.participantMatchScore && (
+              <div>
+                <h4 className="text-xs font-semibold text-gray-400 mb-2 tracking-wider uppercase">
+                  Match Score
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(movie.participantMatchScore).map(([participantName, score]) => (
+                    <div key={participantName} className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/40 rounded-md px-2 py-1 backdrop-blur-sm">
+                      <span className="text-blue-200 text-xs font-medium">
+                        {participantName}
+                      </span>
+                      <span className="text-white text-xs font-bold ml-1">
+                        {score}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -154,11 +174,31 @@ export default function RecommendationCard({
             )}
 
             {movie.reasoning && (
-              <div>
+              <div className="mb-6">
                 <h4 className="text-sm font-semibold text-gray-400 mb-3 tracking-wider uppercase">
                   Why We Picked This
                 </h4>
                 <p className="text-gray-300 leading-relaxed">{movie.reasoning}</p>
+              </div>
+            )}
+
+            {movie.participantMatchScore && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-400 mb-3 tracking-wider uppercase">
+                  Match Score
+                </h4>
+                <div className="flex flex-wrap gap-3">
+                  {Object.entries(movie.participantMatchScore).map(([participantName, score]) => (
+                    <div key={participantName} className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/40 rounded-lg px-3 py-2 backdrop-blur-sm">
+                      <span className="text-blue-200 text-sm font-medium">
+                        {participantName}
+                      </span>
+                      <span className="text-white text-sm font-bold ml-1">
+                        {score}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
