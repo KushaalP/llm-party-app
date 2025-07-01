@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { Heart, X } from 'lucide-react'
 import RecommendationCard from './recommendationsComponents/RecommendationCard'
 import './recommendationsComponents/Recommendations.css'
 
 export default function Recommendations({
   recommendations,
-  isHost,
-  onRegenerate,
-  canRegenerate = true,
 }) {
   const [loadingIndex, setLoadingIndex] = useState(null)
   // Track which mobile cards are expanded
@@ -108,6 +105,20 @@ export default function Recommendations({
     }
   }
 
+  const handleButtonAction = (action) => {
+    if (currentIndex >= recommendations.length - 1) return
+    
+    // Animate card based on action
+    const direction = action === 'like' ? 1 : -1
+    setDrag({ x: direction * window.innerWidth, y: 0, isDragging: false })
+    
+    // Move to next card after animation
+    setTimeout(() => {
+      setCurrentIndex(prev => prev + 1)
+      setDrag({ x: 0, y: 0, isDragging: false })
+    }, 300)
+  }
+
   if (!recommendations || recommendations.length === 0) {
     return (
       <div className="text-center py-20">
@@ -118,22 +129,28 @@ export default function Recommendations({
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold">Your Movie Recommendations</h2>
-        {isHost && (
-          <button
-            onClick={onRegenerate}
-            disabled={!canRegenerate || loadingIndex !== null}
-            className={`flex items-center justify-center btn btn-secondary p-2 md:px-6 md:py-2 gap-0 md:gap-2 ${!canRegenerate || loadingIndex !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <RefreshCw className="w-6 h-6 md:w-4 md:h-4" />
-            <span className="hidden md:block">Regenerate All</span>
-          </button>
-        )}
-      </div>
-
       {/* Swipe Deck Container */}
       <div className="swipe-deck-container">
+        {/* Progress indicator */}
+        <div className="swipe-progress">
+          <span className="progress-text">
+            {currentIndex + 1} of {recommendations.length}
+          </span>
+          <div className="progress-dots">
+            {recommendations.map((_, idx) => (
+              <div 
+                key={idx} 
+                className={`progress-dot ${idx === currentIndex ? 'active' : ''} ${idx < currentIndex ? 'completed' : ''}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Swipe hint - only show on first card */}
+        {currentIndex === 0 && (
+          <p className="swipe-hint">Swipe to see your recommendations →</p>
+        )}
+
         <div className="swipe-deck">
           {recommendations.slice(currentIndex).map((movie, i) => {
             const index = currentIndex + i
@@ -170,24 +187,24 @@ export default function Recommendations({
           })}
         </div>
 
-        {/* Progress indicator */}
-        <div className="swipe-progress">
-          <span className="progress-text">
-            {currentIndex + 1} of {recommendations.length}
-          </span>
-          <div className="progress-dots">
-            {recommendations.map((_, idx) => (
-              <div 
-                key={idx} 
-                className={`progress-dot ${idx === currentIndex ? 'active' : ''} ${idx < currentIndex ? 'completed' : ''}`}
-              />
-            ))}
-          </div>
-        </div>
-
+        {/* Tinder-style Action Buttons */}
         {currentIndex < recommendations.length - 1 && (
-          <p className="swipe-hint">Swipe to see next recommendation →</p>
+          <div className="tinder-buttons">
+            <button 
+              className="tinder-button tinder-button-pass"
+              onClick={() => handleButtonAction('pass')}
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <button 
+              className="tinder-button tinder-button-like"
+              onClick={() => handleButtonAction('like')}
+            >
+              <Heart className="w-6 h-6" />
+            </button>
+          </div>
         )}
+
       </div>
 
       {currentIndex === recommendations.length - 1 && (
