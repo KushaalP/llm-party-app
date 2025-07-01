@@ -15,7 +15,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
 if (!GEMINI_API_KEY) {
-  console.warn('[WARN] GEMINI_API_KEY not set – falling back to mock data');
+  console.warn('[WARN] GEMINI_API_KEY not set – recommendations will fail');
 }
 
 if (!TMDB_API_KEY) {
@@ -93,127 +93,6 @@ app.get('/api/room/:code', (req, res) => {
   res.json(room);
 });
 
-function getMockMovies(excludedTitles = [], participants = []) {
-  // Mock movie recommendations with various data
-  const mockMovies = [
-    {
-      title: "Inception",
-      year: 2010,
-      reasoning: "Perfect blend of action and mind-bending sci-fi that appeals to fans of complex storytelling and visual spectacle.",
-      genres: ["Action", "Sci-Fi", "Thriller"],
-      poster: "https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg",
-      overview: "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
-      rating: 8.8
-    },
-    {
-      title: "The Grand Budapest Hotel",
-      year: 2014,
-      reasoning: "Whimsical comedy-drama with stunning visuals and quirky characters, perfect for those who enjoy unique storytelling styles.",
-      genres: ["Comedy", "Drama"],
-      poster: "https://image.tmdb.org/t/p/w500/eWdyYQreja6JGCzqHWXpWHDrrPo.jpg",
-      overview: "A writer encounters the owner of an aging high-class hotel, who tells him of his early years serving as a lobby boy in the hotel's glorious years under an exceptional concierge.",
-      rating: 8.1
-    },
-    {
-      title: "Parasite",
-      year: 2019,
-      reasoning: "Award-winning thriller that combines dark comedy with social commentary, appealing to fans of sophisticated international cinema.",
-      genres: ["Thriller", "Drama", "Comedy"],
-      poster: "https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg",
-      overview: "A poor family schemes to become employed by a wealthy family by infiltrating their household and posing as unrelated, highly qualified individuals.",
-      rating: 8.6
-    },
-    {
-      title: "Spider-Man: Into the Spider-Verse",
-      year: 2018,
-      reasoning: "Innovative animated superhero film that appeals to both comic book fans and animation enthusiasts with its unique visual style.",
-      genres: ["Animation", "Action", "Adventure"],
-      poster: "https://image.tmdb.org/t/p/w500/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg",
-      overview: "Teen Miles Morales becomes Spider-Man of his reality, crossing his path with five counterparts from other dimensions to stop a threat for all realities.",
-      rating: 8.4
-    },
-    {
-      title: "Knives Out",
-      year: 2019,
-      reasoning: "Modern murder mystery with wit and charm, perfect for groups who enjoy clever plots and ensemble casts.",
-      genres: ["Mystery", "Comedy", "Crime"],
-      poster: "https://image.tmdb.org/t/p/w500/pThyQovXQrw2m0s9x82twj48Jq4.jpg",
-      overview: "A detective investigates the death of a patriarch of an eccentric, combative family.",
-      rating: 7.9
-    },
-    {
-      title: "Dune",
-      year: 2021,
-      reasoning: "Epic sci-fi spectacle with stunning visuals and compelling world-building for fans of grand storytelling.",
-      genres: ["Sci-Fi", "Adventure", "Drama"],
-      poster: "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
-      overview: "Paul Atreides leads nomadic tribes in a rebellion against the evil House Harkonnen.",
-      rating: 8.1
-    },
-    {
-      title: "The Batman",
-      year: 2022,
-      reasoning: "Dark, grounded take on the iconic superhero with noir atmosphere and compelling detective work.",
-      genres: ["Action", "Crime", "Drama"],
-      poster: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
-      overview: "Batman ventures into Gotham City's underworld when a sadistic killer leaves behind a trail of cryptic clues.",
-      rating: 7.8
-    },
-    {
-      title: "Top Gun: Maverick",
-      year: 2022,
-      reasoning: "High-octane action and emotional depth that appeals to both nostalgia and new audiences.",
-      genres: ["Action", "Drama"],
-      poster: "https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg",
-      overview: "After thirty years, Maverick is still pushing the envelope as a top naval aviator.",
-      rating: 8.3
-    },
-    {
-      title: "Everything Everywhere All at Once",
-      year: 2022,
-      reasoning: "Mind-bending multiverse adventure that combines humor, heart, and spectacular creativity.",
-      genres: ["Action", "Adventure", "Comedy"],
-      poster: "https://image.tmdb.org/t/p/w500/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg",
-      overview: "A Chinese-American woman gets swept up in an insane adventure in which she alone can save the world.",
-      rating: 8.1
-    },
-    {
-      title: "The Menu",
-      year: 2022,
-      reasoning: "Dark comedy thriller with unexpected twists that will keep groups guessing and discussing.",
-      genres: ["Comedy", "Horror", "Thriller"],
-      poster: "https://image.tmdb.org/t/p/w500/v31MsWhF9WFh7Qooq6xSBbmJxoG.jpg",
-      overview: "A couple travels to a coastal island to eat at an exclusive restaurant where the chef has prepared a lavish menu.",
-      rating: 7.2
-    },
-    {
-      title: "Glass Onion: A Knives Out Mystery",
-      year: 2022,
-      reasoning: "Clever mystery sequel with ensemble cast and witty dialogue perfect for group viewing.",
-      genres: ["Comedy", "Crime", "Drama"],
-      poster: "https://image.tmdb.org/t/p/w500/vDGr1YdrlfbU9wxTOdpf3zChmv9.jpg",
-      overview: "Detective Benoit Blanc travels to Greece for his latest case.",
-      rating: 7.1
-    }
-  ];
-
-  // Create mock participant match scores using actual participant names
-  const createMockMatchScore = () => {
-    const score = {};
-    participants.forEach(participant => {
-      score[participant.name] = Math.floor(Math.random() * 41) + 60; // Random score between 60-100
-    });
-    return score;
-  };
-
-  // Filter out excluded movies, then randomly select and shuffle 15 movies
-  const availableMovies = mockMovies.filter(movie => !excludedTitles.includes(movie.title));
-  const shuffled = [...availableMovies].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 15).map(movie => ({
-    ...movie,
-    participantMatchScore: createMockMatchScore()
-  }));
-}
 
 async function fetchMovieDetails(title, releaseYear) {
   try {
@@ -312,8 +191,9 @@ ${formattedPrefs}${excludedSection}${participantSection}`;
     }
   } catch (err) {
     console.error('Gemini recommendation error', err);
+    throw new Error('Failed to generate recommendations');
   }
-  return getMockMovies(excludedTitles, participants);
+  throw new Error('No recommendations generated');
 }
 
 async function getMovieRecommendations(preferences, excludedTitles = [], participants = []) {
