@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { RefreshCw } from 'lucide-react'
 import RecommendationCard from './recommendationsComponents/RecommendationCard'
+import './recommendationsComponents/Recommendations.css'
 
 export default function Recommendations({
   recommendations,
@@ -11,10 +12,19 @@ export default function Recommendations({
   const [loadingIndex, setLoadingIndex] = useState(null)
   // Track which mobile cards are expanded
   const [expandedMobile, setExpandedMobile] = useState(new Set())
+  
+  // Swipe deck state
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [drag, setDrag] = useState({ x: 0, y: 0, isDragging: false })
+  const startPoint = useRef({ x: 0, y: 0 })
+  const frameRef = useRef(null)
+  const pendingDragRef = useRef(drag)
 
   // reset loading state when recommendations prop changes
   useEffect(() => {
     setLoadingIndex(null)
+    setCurrentIndex(0)
+    setExpandedMobile(new Set())
   }, [recommendations])
 
   const formatRating = (value) => {
@@ -35,6 +45,67 @@ export default function Recommendations({
       }
       return next
     })
+  }
+
+  // Swipe handlers - using same mechanics as SwipeDeck
+  const handlePointerDown = (e) => {
+    // Don't start drag if card is flipped
+    if (expandedMobile.has(currentIndex)) return
+    
+    e.target.setPointerCapture(e.pointerId)
+    startPoint.current = { x: e.clientX, y: e.clientY }
+    setDrag({ x: 0, y: 0, isDragging: true })
+  }
+
+  const handlePointerMove = (e) => {
+    if (!drag.isDragging || expandedMobile.has(currentIndex)) return
+    const dx = e.clientX - startPoint.current.x
+    const dy = e.clientY - startPoint.current.y
+
+    // Store the latest drag values
+    pendingDragRef.current = { x: dx, y: dy, isDragging: true }
+
+    // Only schedule a state update if we don't already have one queued
+    if (!frameRef.current) {
+      frameRef.current = requestAnimationFrame(() => {
+        setDrag(pendingDragRef.current)
+        frameRef.current = null
+      })
+    }
+  }
+
+  const handlePointerUp = (e) => {
+    if (!drag.isDragging) return
+    const threshold = 120 // px required to count as a swipe
+    const { x } = drag
+    const hasSwiped = Math.abs(x) > threshold
+
+    if (hasSwiped && currentIndex < recommendations.length - 1) {
+      // animate card out of the viewport
+      const direction = x > 0 ? 1 : -1
+      setDrag({ x: direction * window.innerWidth, y: drag.y, isDragging: false })
+
+      // remove the card after the animation finishes
+      setTimeout(() => {
+        setCurrentIndex(prev => prev + 1)
+        setDrag({ x: 0, y: 0, isDragging: false })
+      }, 300)
+    } else {
+      // snap back to centre
+      setDrag({ x: 0, y: 0, isDragging: false })
+    }
+
+    try {
+      e.target.releasePointerCapture(e.pointerId)
+    } catch {
+      /* no-op */
+    }
+
+    // cancel any pending frame
+    if (frameRef.current) {
+      cancelAnimationFrame(frameRef.current)
+      frameRef.current = null
+    }
   }
 
   if (!recommendations || recommendations.length === 0) {
@@ -61,29 +132,76 @@ export default function Recommendations({
         )}
       </div>
 
-      <div className="grid gap-6">
-        {recommendations.map((movie, index) => (
-          <RecommendationCard
-            key={index}
-            movie={movie}
-            index={index}
-            loadingIndex={loadingIndex}
-            expanded={expandedMobile.has(index)}
-            toggleMobileExpansion={toggleMobileExpansion}
-            formatRating={formatRating}
-          />
-        ))}
+      {/* Swipe Deck Container */}
+      <div className="swipe-deck-container">
+        <div className="swipe-deck">
+          {recommendations.slice(currentIndex).map((movie, i) => {
+            const index = currentIndex + i
+            const isTop = i === 0
+            const translate = isTop ? `translate(${drag.x}px, ${drag.y}px)` : `translate(0px, ${-i * 8}px)`
+            const rotate = isTop ? `rotate(${drag.x / 10}deg)` : `rotate(0deg)`
+            const scale = isTop ? 1 : 1 - i * 0.04
+            const transition = drag.isDragging && isTop ? 'none' : 'transform 0.3s ease-out'
+
+            return (
+              <div
+                key={index}
+                className="swipe-deck-card-wrapper"
+                style={{
+                  transform: `${translate} ${rotate} scale(${scale})`,
+                  zIndex: recommendations.length - i,
+                  transition,
+                }}
+                onPointerDown={isTop ? handlePointerDown : undefined}
+                onPointerMove={isTop ? handlePointerMove : undefined}
+                onPointerUp={isTop ? handlePointerUp : undefined}
+                onPointerCancel={isTop ? handlePointerUp : undefined}
+              >
+                <RecommendationCard
+                  movie={movie}
+                  index={index}
+                  loadingIndex={loadingIndex}
+                  expanded={expandedMobile.has(index)}
+                  toggleMobileExpansion={toggleMobileExpansion}
+                  formatRating={formatRating}
+                />
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Progress indicator */}
+        <div className="swipe-progress">
+          <span className="progress-text">
+            {currentIndex + 1} of {recommendations.length}
+          </span>
+          <div className="progress-dots">
+            {recommendations.map((_, idx) => (
+              <div 
+                key={idx} 
+                className={`progress-dot ${idx === currentIndex ? 'active' : ''} ${idx < currentIndex ? 'completed' : ''}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {currentIndex < recommendations.length - 1 && (
+          <p className="swipe-hint">Swipe to see next recommendation →</p>
+        )}
       </div>
 
-      <div className="mt-8 sm:mt-12 text-center">
-        <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 mx-2 sm:mx-0">
-          <h3 className="text-base sm:text-lg font-semibold mb-2">Enjoy your movie night!</h3>
-          <p className="text-gray-400 text-sm sm:text-base">
-            These recommendations were carefully selected based on everyone's preferences. 
-            Have a great time watching together!
-          </p>
+      {currentIndex === recommendations.length - 1 && (
+        <div className="mt-8 sm:mt-12 text-center">
+          <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 mx-2 sm:mx-0">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">Enjoy your movie night!</h3>
+            <p className="text-gray-400 text-sm sm:text-base">
+              These recommendations were carefully selected based on everyone's preferences. 
+              Have a great time watching together!
+            </p>
+          </div>
         </div>
-      </div>
+      )}
+
     </div>
   )
 }
