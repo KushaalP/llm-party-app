@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Heart, X, Info } from 'lucide-react'
+import { Heart, X, Info, Users, CheckCircle } from 'lucide-react'
 import RecommendationCard from './recommendationsComponents/RecommendationCard'
 import './recommendationsComponents/Recommendations.css'
 
 export default function Recommendations({
   recommendations,
+  room,
+  participantId,
+  socket,
 }) {
   const [loadingIndex, setLoadingIndex] = useState(null)
   // Track which mobile cards are expanded
@@ -14,6 +17,7 @@ export default function Recommendations({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [drag, setDrag] = useState({ x: 0, y: 0, isDragging: false })
   const [isAnimating, setIsAnimating] = useState(false)
+  const [swipesComplete, setSwipesComplete] = useState(false)
   const startPoint = useRef({ x: 0, y: 0 })
   const frameRef = useRef(null)
   const pendingDragRef = useRef(drag)
@@ -76,7 +80,7 @@ export default function Recommendations({
     const { x } = drag
     const hasSwiped = Math.abs(x) > threshold
 
-    if (hasSwiped && currentIndex < recommendations.length - 1) {
+    if (hasSwiped && currentIndex <= recommendations.length - 1) {
       // Prevent further actions while animating
       setIsAnimating(true)
       
@@ -84,11 +88,30 @@ export default function Recommendations({
       const direction = x > 0 ? 1 : -1
       setDrag({ x: direction * window.innerWidth * 1.5, y: drag.y, isDragging: false })
 
+      // Emit like event if swiped right
+      if (direction > 0 && socket) {
+        socket.emit('movie-liked', {
+          roomCode: room.code,
+          participantId,
+          movieIndex: currentIndex
+        })
+      }
+
       // remove the card after the animation finishes
       setTimeout(() => {
-        setCurrentIndex(prev => Math.min(prev + 1, recommendations.length - 1))
+        const nextIndex = currentIndex + 1
+        setCurrentIndex(nextIndex)
         setDrag({ x: 0, y: 0, isDragging: false })
         setIsAnimating(false)
+
+        // Check if completed all swipes
+        if (nextIndex >= recommendations.length && socket) {
+          setSwipesComplete(true)
+          socket.emit('swipes-completed', {
+            roomCode: room.code,
+            participantId
+          })
+        }
       }, 400) // Increased timeout to match CSS transition
     } else {
       // snap back to centre
@@ -109,7 +132,7 @@ export default function Recommendations({
   }
 
   const handleButtonAction = (action) => {
-    if (currentIndex >= recommendations.length - 1 || isAnimating) return
+    if (currentIndex >= recommendations.length || isAnimating) return
     
     // Prevent further actions while animating
     setIsAnimating(true)
@@ -118,11 +141,30 @@ export default function Recommendations({
     const direction = action === 'like' ? 1 : -1
     setDrag({ x: direction * window.innerWidth * 1.5, y: 0, isDragging: false })
     
+    // Emit like event if liked
+    if (action === 'like' && socket) {
+      socket.emit('movie-liked', {
+        roomCode: room.code,
+        participantId,
+        movieIndex: currentIndex
+      })
+    }
+    
     // Move to next card after animation
     setTimeout(() => {
-      setCurrentIndex(prev => Math.min(prev + 1, recommendations.length - 1))
+      const nextIndex = currentIndex + 1
+      setCurrentIndex(nextIndex)
       setDrag({ x: 0, y: 0, isDragging: false })
       setIsAnimating(false)
+
+      // Check if completed all swipes
+      if (nextIndex >= recommendations.length && socket) {
+        setSwipesComplete(true)
+        socket.emit('swipes-completed', {
+          roomCode: room.code,
+          participantId
+        })
+      }
     }, 400)
   }
 
@@ -210,7 +252,7 @@ export default function Recommendations({
         </div>
 
         {/* Tinder-style Action Buttons */}
-        {currentIndex < recommendations.length - 1 && (
+        {currentIndex < recommendations.length && !swipesComplete && (
           <div className="tinder-buttons">
             <button 
               className="tinder-button tinder-button-pass"
@@ -236,14 +278,45 @@ export default function Recommendations({
 
       </div>
 
-      {currentIndex === recommendations.length - 1 && (
+      {swipesComplete && (
         <div className="mt-8 sm:mt-12 text-center">
           <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 mx-2 sm:mx-0">
-            <h3 className="text-base sm:text-lg font-semibold mb-2">Enjoy your movie night!</h3>
-            <p className="text-gray-400 text-sm sm:text-base">
-              These recommendations were carefully selected based on everyone's preferences. 
-              Have a great time watching together!
+            <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-4">You've finished swiping!</h3>
+            <p className="text-gray-400 mb-6">
+              Waiting for everyone else to finish their selections...
             </p>
+            
+            {/* Show who's done swiping */}
+            <div className="mb-6">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Users className="w-5 h-5 text-gray-400" />
+                <span className="text-gray-300 font-medium">Swipe Progress</span>
+              </div>
+              <div className="space-y-2">
+                {room?.participants?.map((participant) => (
+                  <div key={participant.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                    <span className="text-sm font-medium">
+                      {participant.name}
+                      {participant.id === participantId && " (You)"}
+                    </span>
+                    <span className={`text-sm font-medium ${participant.swipesCompleted ? 'text-green-400' : 'text-gray-400'}`}>
+                      {participant.swipesCompleted ? '✓ Done' : 'Swiping...'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Host skip button */}
+            {room?.host === participantId && (
+              <button
+                onClick={() => socket.emit('skip-to-results', { roomCode: room.code, hostId: participantId })}
+                className="btn btn-primary"
+              >
+                Skip to Results
+              </button>
+            )}
           </div>
         </div>
       )}

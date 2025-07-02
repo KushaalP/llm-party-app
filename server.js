@@ -48,13 +48,16 @@ app.post('/api/create-room', (req, res) => {
   rooms.set(roomCode, {
     code: roomCode,
     host: hostId,
-    participants: [{ id: hostId, name: name?.trim() || 'Host', isReady: false, preferences: '', socketId: null }],
+    participants: [{ id: hostId, name: name?.trim() || 'Host', isReady: false, preferences: '', socketId: null, swipesCompleted: false }],
     locked: false,
     recommendations: null,
     // tracking for rerolls / regenerations
     regenerateCount: 0,
     rerollCounts: {},
-    recommendationHistory: []
+    recommendationHistory: [],
+    // swipe tracking
+    swipeData: {}, // { participantId: [movieIndexes] }
+    allSwipesComplete: false
   });
   
   res.json({ roomCode, hostId });
@@ -77,7 +80,7 @@ app.post('/api/join-room', (req, res) => {
   }
   
   const participantId = uuidv4();
-  const participant = { id: participantId, name, isReady: false, preferences: '', socketId: null };
+  const participant = { id: participantId, name, isReady: false, preferences: '', socketId: null, swipesCompleted: false };
   room.participants.push(participant);
   
   io.to(roomCode).emit('participant-joined', participant);
@@ -287,6 +290,10 @@ io.on('connection', (socket) => {
                   ...recommendations.map(m => m.title)
                 ];
                 room.rerollCounts = {};
+                // Reset swipe tracking
+                room.swipeData = {};
+                room.allSwipesComplete = false;
+                room.participants.forEach(p => p.swipesCompleted = false);
                 io.to(roomCode).emit('recommendations-ready', recommendations);
                 io.to(roomCode).emit('room-update', room);
               })
@@ -329,6 +336,10 @@ io.on('connection', (socket) => {
         room.recommendations = recommendations;
         room.recommendationHistory.push(...recommendations.map(m => m.title));
         room.rerollCounts = {};
+        // Reset swipe tracking
+        room.swipeData = {};
+        room.allSwipesComplete = false;
+        room.participants.forEach(p => p.swipesCompleted = false);
 
         io.to(roomCode).emit('recommendations-ready', recommendations);
         io.to(roomCode).emit('room-update', room);
@@ -383,6 +394,57 @@ io.on('connection', (socket) => {
     } catch (err) {
       console.error('Error rerolling movie:', err);
       io.to(roomCode).emit('recommendations-error', 'Failed to reroll movie');
+    }
+  });
+
+  socket.on('movie-liked', ({ roomCode, participantId, movieIndex }) => {
+    const room = rooms.get(roomCode);
+    if (!room) return;
+
+    // Initialize swipe data for participant if not exists
+    if (!room.swipeData[participantId]) {
+      room.swipeData[participantId] = [];
+    }
+
+    // Add movie to liked list if not already there
+    if (!room.swipeData[participantId].includes(movieIndex)) {
+      room.swipeData[participantId].push(movieIndex);
+    }
+
+    // Emit real-time update to all participants
+    io.to(roomCode).emit('swipe-update', {
+      participantId,
+      totalLikes: room.swipeData[participantId].length
+    });
+  });
+
+  socket.on('swipes-completed', ({ roomCode, participantId }) => {
+    const room = rooms.get(roomCode);
+    if (!room) return;
+
+    const participant = room.participants.find(p => p.id === participantId);
+    if (participant) {
+      participant.swipesCompleted = true;
+      
+      // Check if all participants have completed swipes
+      const allComplete = room.participants.every(p => p.swipesCompleted);
+      if (allComplete) {
+        room.allSwipesComplete = true;
+        io.to(roomCode).emit('all-swipes-complete');
+      } else {
+        io.to(roomCode).emit('participant-swipes-complete', { participantId, name: participant.name });
+      }
+
+      io.to(roomCode).emit('room-update', room);
+    }
+  });
+
+  socket.on('skip-to-results', ({ roomCode, hostId }) => {
+    const room = rooms.get(roomCode);
+    if (room && room.host === hostId) {
+      room.allSwipesComplete = true;
+      io.to(roomCode).emit('all-swipes-complete');
+      io.to(roomCode).emit('room-update', room);
     }
   });
 

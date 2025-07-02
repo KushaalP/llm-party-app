@@ -7,6 +7,7 @@ import Lobby from './Lobby'
 import Preferences from './Preferences'
 import Recommendations from './Recommendations'
 import WaitingScreen from './WaitingScreen'
+import SwipeResults from './SwipeResults'
 import { Film, LogOut } from 'lucide-react'
 import { pageVariants, phaseVariants } from '../utils/animationVariants'
 
@@ -20,7 +21,7 @@ export default function Room() {
   const [room, setRoom] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [phase, setPhase] = useState('lobby') // lobby, preferences, waiting, generating, results
+  const [phase, setPhase] = useState('lobby') // lobby, preferences, waiting, generating, results, swipe-results
   const [participantId] = useState(localStorage.getItem('participantId'))
   const [isHost] = useState(localStorage.getItem('isHost') === 'true')
 
@@ -132,6 +133,11 @@ export default function Room() {
       setTimeout(() => navigate('/'), 2000)
     })
 
+    socket.on('all-swipes-complete', () => {
+      console.log('All participants have completed swipes')
+      setPhase('swipe-results')
+    })
+
     return () => {
       socket.off('room-update', handleRoomUpdate)
       socket.off('participant-joined')
@@ -145,6 +151,7 @@ export default function Room() {
       socket.off('participant-left')
       socket.off('room-not-found')
       socket.off('participant-not-found')
+      socket.off('all-swipes-complete')
     }
   }, [socket, roomCode, participantId, navigate])
 
@@ -153,8 +160,10 @@ export default function Room() {
     if (room) {
       let newPhase = phase
       
-      // Priority order: results > generating > waiting > preferences > lobby
-      if (room.recommendations) {
+      // Priority order: swipe-results > results > generating > waiting > preferences > lobby
+      if (room.allSwipesComplete) {
+        newPhase = 'swipe-results'
+      } else if (room.recommendations) {
         newPhase = 'results'
       } else if (room.locked) {
         newPhase = 'generating'
@@ -442,11 +451,43 @@ export default function Room() {
 
               <Recommendations
                 recommendations={room.recommendations}
+                room={room}
+                participantId={participantId}
+                socket={socket}
                 isHost={isHost}
                 onRegenerate={handleRegenerateRecommendations}
                 canRegenerate={room.regenerateCount < 2}
                 onReroll={handleRerollMovie}
                 rerollCounts={room.rerollCounts}
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Swipe Results phase */}
+        {phase === 'swipe-results' && room?.recommendations && (
+          <motion.div 
+            key="swipe-results"
+            className="p-4 py-8"
+            variants={phaseVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <div className="container mx-auto">
+              <div className="text-center mb-8 relative">
+                <button
+                  onClick={handleLeaveRoom}
+                  className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
+                >
+                  <LogOut className="w-4 h-4 " />
+                  Leave Room
+                </button>
+              </div>
+
+              <SwipeResults
+                room={room}
+                recommendations={room.recommendations}
               />
             </div>
           </motion.div>
