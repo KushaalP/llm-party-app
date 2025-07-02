@@ -5,23 +5,36 @@
   left: 0;
   right: 0;
   bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 2rem;
+  overflow: hidden; /* Prevent scrolling */
+  overscroll-behavior: none; /* Prevent bounce effects on mobile */
+  touch-action: none; /* Prevent unwanted touch interactions */
 }
 
 .waiting-content {
   max-width: 600px;
   width: 100%;
+  max-height: calc(100vh - 4rem);
+  max-height: calc(100dvh - 4rem); /* Account for padding */
   text-align: center;
   animation: fadeInUp 0.6s ease-out;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .waiting-header {
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
+  flex-shrink: 0;
 }
 
 .waiting-icon {
@@ -47,12 +60,13 @@
 
 /* Progress Section */
 .progress-section {
-  margin-bottom: 3rem;
-  padding: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
   background: rgba(30, 41, 59, 0.5);
   border-radius: 1rem;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .progress-bar-container {
@@ -93,7 +107,11 @@
 
 /* Participants Section */
 .participants-section {
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .participants-header {
@@ -101,7 +119,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .participants-label {
@@ -116,6 +135,8 @@
   gap: 1rem;
   max-width: 500px;
   margin: 0 auto;
+  overflow-y: auto;
+  max-height: 300px;
 }
 
 .participant-card {
@@ -190,7 +211,13 @@
 }
 
 /* Back Button */
-.back-button {
+.waiting-back-section {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.waiting-back-button {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -202,15 +229,17 @@
   font-weight: 500;
   transition: all 0.2s ease;
   cursor: pointer;
+  min-height: 44px; /* Minimum touch target size */
+  touch-action: manipulation; /* Prevent zoom on double tap */
 }
 
-.back-button:hover {
+.waiting-back-button:hover {
   background: rgba(71, 85, 105, 0.5);
   border-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-1px);
 }
 
-.back-button:active {
+.waiting-back-button:active {
   transform: translateY(0);
 }
 
@@ -230,10 +259,29 @@
 @media (max-width: 640px) {
   .waiting-screen {
     padding: 1rem;
+    /* Add safe area insets for devices with notches */
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  .waiting-content {
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+  }
+  
+  .waiting-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .waiting-icon {
+    margin-bottom: 1rem;
   }
   
   .waiting-title {
     font-size: 1.5rem;
+    margin-bottom: 0.5rem;
   }
   
   .waiting-subtitle {
@@ -242,9 +290,97 @@
   
   .participants-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+    max-height: 250px;
+  }
+  
+  .participant-card {
+    padding: 0.75rem;
   }
   
   .progress-section {
-    padding: 1.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .participants-section {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .waiting-screen {
+    padding: 0.75rem;
+  }
+  
+  .waiting-content {
+    max-height: calc(100vh - 1.5rem);
+    max-height: calc(100dvh - 1.5rem);
+  }
+  
+  .waiting-title {
+    font-size: 1.25rem;
+  }
+  
+  .waiting-subtitle {
+    font-size: 0.875rem;
+  }
+  
+  .participants-grid {
+    gap: 0.5rem;
+    max-height: 200px;
+  }
+  
+  .participant-card {
+    padding: 0.5rem;
+    gap: 0.75rem;
+  }
+  
+  .participant-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
+  }
+  
+  .participant-name {
+    font-size: 0.8rem;
+  }
+  
+  .participant-status {
+    font-size: 0.7rem;
+  }
+  
+  .progress-section {
+    padding: 0.75rem;
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .waiting-content {
+    max-height: calc(100vh - 1rem);
+    max-height: calc(100dvh - 1rem);
+  }
+  
+  .waiting-header {
+    margin-bottom: 1rem;
+  }
+  
+  .waiting-icon {
+    margin-bottom: 0.5rem;
+  }
+  
+  .waiting-title {
+    font-size: 1.25rem;
+  }
+  
+  .participants-grid {
+    max-height: 150px;
+  }
+  
+  .progress-section {
+    margin-bottom: 1rem;
+    padding: 1rem;
   }
 }
