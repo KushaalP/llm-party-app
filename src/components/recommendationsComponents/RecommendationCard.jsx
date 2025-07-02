@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { Film } from 'lucide-react'
 
 export default function RecommendationCard({
@@ -7,7 +8,6 @@ export default function RecommendationCard({
   loadingIndex,
   expanded,
   toggleMobileExpansion,
-  formatRating,
 }) {
   const hasPoster = Boolean(movie.poster)
 
@@ -38,6 +38,29 @@ export default function RecommendationCard({
         )}
 
         <div className="card-content-front">
+          {/* Match scores above title */}
+          {movie.participantMatchScore && (
+            <div className="match-scores-inline">
+              {Object.entries(movie.participantMatchScore)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 3)
+                .map(([participantName, score]) => {
+                  let scoreClass = 'match-very-poor';
+                  if (score >= 85) scoreClass = 'match-excellent';
+                  else if (score >= 70) scoreClass = 'match-good';
+                  else if (score >= 50) scoreClass = 'match-moderate';
+                  else if (score >= 30) scoreClass = 'match-poor';
+                  
+                  return (
+                    <div key={participantName} className={`match-score-badge ${scoreClass}`}>
+                      <span className="match-score-name-full">{participantName}</span>
+                      <span className="match-score-percent">{score}%</span>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+          
           <h3 className="card-title">{movie.title}</h3>
           <div className="card-subtitle">
             <span className="card-genres-text">
@@ -49,33 +72,10 @@ export default function RecommendationCard({
             </span>
           </div>
         </div>
-
-        {/* Match scores at top right */}
-        {movie.participantMatchScore && (
-          <div className="match-scores-top">
-            {Object.entries(movie.participantMatchScore)
-              .sort(([, a], [, b]) => b - a)
-              .slice(0, 3)
-              .map(([participantName, score]) => (
-                <div key={participantName} className="match-score-badge" data-score={score}>
-                  <span className="match-score-name-full">{participantName}</span>
-                  <span className="match-score-percent">{score}%</span>
-                </div>
-              ))}
-          </div>
-        )}
       </div>
 
       {/* Back of card */}
       <div className="card-face card-back">
-        {/* Back button hint */}
-        <button className="back-button-hint" onClick={(e) => {
-          e.stopPropagation();
-          toggleMobileExpansion(index);
-        }}>
-          ← Back
-        </button>
-        
         <div className="card-content-back">
           <h3 className="card-title-back">{movie.title}</h3>
           
@@ -99,18 +99,41 @@ export default function RecommendationCard({
               <div className="match-score-list">
                 {Object.entries(movie.participantMatchScore)
                   .sort(([, a], [, b]) => b - a)
-                  .map(([participantName, score]) => (
-                    <div key={participantName} className="match-score-item">
-                      <span className="match-score-name">{participantName}</span>
-                      <span className="match-score-value">{score}%</span>
-                    </div>
-                  ))}
+                  .map(([participantName, score]) => {
+                    let scoreClass = 'match-very-poor';
+                    if (score >= 85) scoreClass = 'match-excellent';
+                    else if (score >= 70) scoreClass = 'match-good';
+                    else if (score >= 50) scoreClass = 'match-moderate';
+                    else if (score >= 30) scoreClass = 'match-poor';
+                    
+                    return (
+                      <div key={participantName} className="match-score-item">
+                        <span className="match-score-name">{participantName}</span>
+                        <span className={`match-score-value ${scoreClass}`}>{score}%</span>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           )}
 
         </div>
+        
+        {/* Subtle tap hint */}
+        <div className="tap-to-return">
+          Tap to return
+        </div>
       </div>
     </div>
   )
+}
+
+RecommendationCard.propTypes = {
+  movie: PropTypes.object.isRequired,
+  index: PropTypes.number.isRequired,
+  loadingIndex: PropTypes.number.isRequired,
+  expanded: PropTypes.bool.isRequired,
+  toggleMobileExpansion: PropTypes.func.isRequired,
+  formatRating: PropTypes.func.isRequired,
+  
 }
