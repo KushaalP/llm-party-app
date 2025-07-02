@@ -384,3 +384,7 @@
     padding: 1rem;
   }
 }
+
+.pb-4 {
+  padding-bottom: 1rem;
+}

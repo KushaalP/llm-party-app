@@ -123,10 +123,10 @@ export default function WaitingScreen({
 
         {/* Back Button (only when not generating) */}
         {!isGenerating && (
-          <div className="waiting-back-section">
+          <div className="flex justify-center mt-6 pb-4">
             <button
               onClick={onBackToPreferences}
-              className="waiting-back-button"
+              className="btn btn-secondary gap-2 px-6 mt-8"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Change My Preferences</span>
