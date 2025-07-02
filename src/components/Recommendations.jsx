@@ -172,10 +172,10 @@ export default function Recommendations({
                   zIndex: recommendations.length - i,
                   transition,
                 }}
-                onPointerDown={isTop ? handlePointerDown : undefined}
-                onPointerMove={isTop ? handlePointerMove : undefined}
-                onPointerUp={isTop ? handlePointerUp : undefined}
-                onPointerCancel={isTop ? handlePointerUp : undefined}
+                onPointerDown={isTop && !expandedMobile.has(index) ? handlePointerDown : undefined}
+                onPointerMove={isTop && !expandedMobile.has(index) ? handlePointerMove : undefined}
+                onPointerUp={isTop && !expandedMobile.has(index) ? handlePointerUp : undefined}
+                onPointerCancel={isTop && !expandedMobile.has(index) ? handlePointerUp : undefined}
               >
                 <RecommendationCard
                   movie={movie}

@@ -31,10 +31,16 @@
   cursor: grabbing;
 }
 
-.swipe-deck-card-wrapper,
-.swipe-deck-card-wrapper * {
-  touch-action: none; /* modern */
-  -ms-touch-action: none; /* old Edge/IE */
+.swipe-deck-card-wrapper {
+  touch-action: pan-y; /* Allow vertical scrolling */
+  -ms-touch-action: pan-y; /* old Edge/IE */
+}
+
+/* Disable touch actions only on front face when not flipped */
+.recommendation-swipe-card:not([style*="rotateY(180deg)"]) .card-front,
+.recommendation-swipe-card:not([style*="rotateY(180deg)"]) .card-front * {
+  touch-action: none;
+  -ms-touch-action: none;
 }
 
 .recommendation-swipe-card {
@@ -67,6 +73,15 @@
   transform: rotateY(180deg);
   background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
   z-index: 1;
+}
+
+/* Switch z-index when card is flipped */
+.recommendation-swipe-card[style*="rotateY(180deg)"] .card-front {
+  z-index: 1;
+}
+
+.recommendation-swipe-card[style*="rotateY(180deg)"] .card-back {
+  z-index: 2;
 }
 
 .card-poster-container {
@@ -211,7 +226,10 @@
   padding: 4rem 2rem 2rem;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   color: white;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  touch-action: pan-y; /* Allow vertical scrolling */
 }
 
 .card-title-back {
