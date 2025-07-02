@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Heart, X } from 'lucide-react'
+import { Heart, X, Info } from 'lucide-react'
 import RecommendationCard from './recommendationsComponents/RecommendationCard'
 import './recommendationsComponents/Recommendations.css'
 
@@ -206,13 +206,19 @@ export default function Recommendations({
               className="tinder-button tinder-button-pass"
               onClick={() => handleButtonAction('pass')}
             >
-              <X className="w-6 h-6" />
+              <X className="w-8 h-8" strokeWidth={3} />
+            </button>
+            <button 
+              className="tinder-button tinder-button-info"
+              onClick={() => toggleMobileExpansion(currentIndex)}
+            >
+              <Info className="w-6 h-6" strokeWidth={2.5} />
             </button>
             <button 
               className="tinder-button tinder-button-like"
               onClick={() => handleButtonAction('like')}
             >
-              <Heart className="w-6 h-6" />
+              <Heart className="w-8 h-8" strokeWidth={3} />
             </button>
           </div>
         )}
