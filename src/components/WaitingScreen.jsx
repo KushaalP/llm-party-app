@@ -9,18 +9,9 @@ export default function WaitingScreen({
 }) {
   const [progress, setProgress] = useState(0)
   const [progressMessage, setProgressMessage] = useState('')
-  const [isVisible, setIsVisible] = useState(false)
 
   const readyParticipants = room?.participants?.filter(p => p.isReady) || []
   const totalParticipants = room?.participants?.length || 0
-
-  // Fade in on mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true)
-    }, 50)
-    return () => clearTimeout(timer)
-  }, [])
 
   // Progress bar animation when generating
   useEffect(() => {
@@ -65,14 +56,11 @@ export default function WaitingScreen({
   }, [isGenerating])
 
   const handleBackClick = () => {
-    setIsVisible(false)
-    setTimeout(() => {
-      onBackToPreferences()
-    }, 300)
+    onBackToPreferences()
   }
 
   return (
-    <div className={`waiting-screen ${isVisible ? 'visible' : ''}`}>
+    <div className="waiting-screen visible">
       <div className="waiting-content">
         
         {/* Header */}
