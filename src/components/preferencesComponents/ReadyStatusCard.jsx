@@ -21,22 +21,12 @@ export default function ReadyStatusCard({
         onClick={handleReadyToggle}
         disabled={userPreferencesLength === 0}
         className={`btn w-full text-lg py-4 ${
-          isReady
-            ? 'btn-primary'
-            : userPreferencesLength > 0
+          userPreferencesLength > 0
             ? 'btn-secondary'
             : 'bg-gray-600 text-gray-400 cursor-not-allowed'
         }`}
       >
-        {isReady ? (
-          <>
-            <CheckCircle2 size={18} className="inline-block mr-1 -mt-1" /> Ready!
-          </>
-        ) : (
-          <>
-            <Hourglass size={18} className="inline-block mr-1 -mt-1" /> Mark as Ready
-          </>
-        )}
+        <Hourglass size={18} className="inline-block mr-1 -mt-1" /> Mark as Ready
       </button>
 
       {userPreferencesLength === 0 && (

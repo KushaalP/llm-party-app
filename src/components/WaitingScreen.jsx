@@ -9,9 +9,18 @@ export default function WaitingScreen({
 }) {
   const [progress, setProgress] = useState(0)
   const [progressMessage, setProgressMessage] = useState('')
+  const [isVisible, setIsVisible] = useState(false)
 
   const readyParticipants = room?.participants?.filter(p => p.isReady) || []
   const totalParticipants = room?.participants?.length || 0
+
+  // Fade in on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true)
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Progress bar animation when generating
   useEffect(() => {
@@ -55,8 +64,15 @@ export default function WaitingScreen({
     return () => clearInterval(interval)
   }, [isGenerating])
 
+  const handleBackClick = () => {
+    setIsVisible(false)
+    setTimeout(() => {
+      onBackToPreferences()
+    }, 300)
+  }
+
   return (
-    <div className="waiting-screen">
+    <div className={`waiting-screen ${isVisible ? 'visible' : ''}`}>
       <div className="waiting-content">
         
         {/* Header */}
@@ -125,7 +141,7 @@ export default function WaitingScreen({
         {!isGenerating && (
           <div className="flex justify-center mt-6 pb-4">
             <button
-              onClick={onBackToPreferences}
+              onClick={handleBackClick}
               className="btn btn-secondary gap-2 px-6 mt-8"
             >
               <ArrowLeft className="w-5 h-5" />

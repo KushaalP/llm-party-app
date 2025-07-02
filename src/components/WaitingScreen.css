@@ -17,6 +17,12 @@
   overflow: hidden; /* Prevent scrolling */
   overscroll-behavior: none; /* Prevent bounce effects on mobile */
   touch-action: none; /* Prevent unwanted touch interactions */
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.waiting-screen.visible {
+  opacity: 1;
 }
 
 .waiting-content {
@@ -30,6 +36,12 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
+  transform: translateY(20px);
+  transition: transform 0.3s ease-in-out;
+}
+
+.waiting-screen.visible .waiting-content {
+  transform: translateY(0);
 }
 
 .waiting-header {
@@ -137,6 +149,7 @@
   margin: 0 auto;
   overflow-y: auto;
   max-height: 300px;
+  padding-bottom: 0.5rem; /* Add padding for overflow shadow */
 }
 
 .participant-card {
@@ -241,6 +254,34 @@
 
 .waiting-back-button:active {
   transform: translateY(0);
+}
+
+
+
+/* Ensure button container has enough space */
+.flex {
+  display: flex;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
+.pb-4 {
+  padding-bottom: 1rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 /* Animations */
@@ -383,8 +424,4 @@
     margin-bottom: 1rem;
     padding: 1rem;
   }
-}
-
-.pb-4 {
-  padding-bottom: 1rem;
 }
