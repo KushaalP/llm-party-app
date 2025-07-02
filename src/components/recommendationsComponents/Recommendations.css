@@ -113,11 +113,15 @@
   bottom: 0;
   left: 0;
   right: 0;
+  top: 0;
   padding: 1.5rem;
   color: white;
   z-index: 2;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .card-title {
@@ -135,6 +139,7 @@
   font-size: 0.875rem;
   color: #9ca3af;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  margin-bottom: 0.5rem;
 }
 
 .card-genres-text,
@@ -147,78 +152,108 @@
   color: #6b7280;
 }
 
-/* Match Scores inline above title */
-.match-scores-inline {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
+/* Match Scores Section - Tinder Style */
+.match-scores-section {
+  margin-top: 0.2rem;
 }
 
-.match-score-badge {
-  display: inline-flex;
+.match-scores-title {
+  display: flex;
   align-items: center;
   gap: 0.375rem;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
-  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.match-icon {
+  width: 1rem;
+  height: 1rem;
+  color: white;
+}
+
+.match-scores-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.match-score-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.25rem 0.625rem;
   border-radius: 999px;
   font-size: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  font-weight: 600;
   white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Match score color classes */
-.match-score-badge.match-excellent {
-  color: #10b981; /* 90%+ - Bright green */
+/* Match score pill colors - using background colors for better visibility */
+.match-score-pill.match-excellent {
+  background: #10b981;
+  color: white;
 }
 
-.match-score-badge.match-good {
-  color: #84cc16; /* 75-89% - Lime green */
+.match-score-pill.match-good {
+  background: #84cc16;
+  color: white;
 }
 
-.match-score-badge.match-moderate {
-  color: #eab308; /* 50-74% - Yellow */
+.match-score-pill.match-moderate {
+  background: #eab308;
+  color: #1f2937;
 }
 
-.match-score-badge.match-poor {
-  color: #f97316; /* 30-49% - Orange */
+.match-score-pill.match-poor {
+  background: #f97316;
+  color: white;
 }
 
-.match-score-badge.match-very-poor {
-  color: #ef4444; /* 0-29% - Red */
+.match-score-pill.match-very-poor {
+  background: #ef4444;
+  color: white;
 }
 
-.match-score-name-full {
+.pill-name {
   font-weight: 500;
-  opacity: 0.9;
 }
 
-.match-score-percent {
+.pill-score {
   font-weight: 700;
+  opacity: 0.9;
 }
 
 /* Removed tap hint for cleaner Tinder-style design */
 
 .card-content-back {
-  padding: 4rem 2rem 2rem;
+  padding: 2rem 1.5rem 3rem;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   color: white;
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   touch-action: pan-y; /* Allow vertical scrolling */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .card-title-back {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
   color: #f3f4f6;
+  margin: 0;
 }
 
 .card-section {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .section-title {
@@ -227,26 +262,28 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #9ca3af;
-  margin-bottom: 0.75rem;
+  margin: 0;
 }
 
 .section-text {
   font-size: 0.875rem;
-  line-height: 1.6;
+  line-height: 1.5;
   color: #e5e7eb;
+  margin: 0;
 }
 
 /* Subtle tap hint on back of card */
 .tap-to-return {
-  position: absolute;
-  bottom: 1.5rem;
+  position: fixed;
+  bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #6b7280;
-  opacity: 0.7;
+  opacity: 0.6;
   text-align: center;
   pointer-events: none;
+  z-index: 10;
 }
 
 /* Removed tap hint for cleaner design */
@@ -254,14 +291,14 @@
 .match-score-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .match-score-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
+  padding: 0.625rem 0.875rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);

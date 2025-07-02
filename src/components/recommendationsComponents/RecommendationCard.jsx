@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Film } from 'lucide-react'
+import { Film, Target } from 'lucide-react'
 
 export default function RecommendationCard({
   movie,
@@ -38,29 +38,6 @@ export default function RecommendationCard({
         )}
 
         <div className="card-content-front">
-          {/* Match scores above title */}
-          {movie.participantMatchScore && (
-            <div className="match-scores-inline">
-              {Object.entries(movie.participantMatchScore)
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 3)
-                .map(([participantName, score]) => {
-                  let scoreClass = 'match-very-poor';
-                  if (score >= 85) scoreClass = 'match-excellent';
-                  else if (score >= 70) scoreClass = 'match-good';
-                  else if (score >= 50) scoreClass = 'match-moderate';
-                  else if (score >= 30) scoreClass = 'match-poor';
-                  
-                  return (
-                    <div key={participantName} className={`match-score-badge ${scoreClass}`}>
-                      <span className="match-score-name-full">{participantName}</span>
-                      <span className="match-score-percent">{score}%</span>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-          
           <h3 className="card-title">{movie.title}</h3>
           <div className="card-subtitle">
             <span className="card-genres-text">
@@ -71,6 +48,34 @@ export default function RecommendationCard({
               {movie.year}{movie.runtime ? `, ${movie.runtime} min` : ''}
             </span>
           </div>
+          
+          {/* Match scores at bottom like Tinder interests */}
+          {movie.participantMatchScore && (
+            <div className="match-scores-section">
+              <div className="match-scores-title">
+                <Target className="match-icon" />
+                <span>Match Scores</span>
+              </div>
+              <div className="match-scores-pills">
+                {Object.entries(movie.participantMatchScore)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([participantName, score]) => {
+                    let scoreClass = 'match-very-poor';
+                    if (score >= 85) scoreClass = 'match-excellent';
+                    else if (score >= 70) scoreClass = 'match-good';
+                    else if (score >= 50) scoreClass = 'match-moderate';
+                    else if (score >= 30) scoreClass = 'match-poor';
+                    
+                    return (
+                      <div key={participantName} className={`match-score-pill ${scoreClass}`}>
+                        <span className="pill-name">{participantName}</span>
+                        <span className="pill-score">{score}%</span>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
