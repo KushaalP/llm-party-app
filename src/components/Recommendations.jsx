@@ -77,13 +77,13 @@ export default function Recommendations({
     if (hasSwiped && currentIndex < recommendations.length - 1) {
       // animate card out of the viewport
       const direction = x > 0 ? 1 : -1
-      setDrag({ x: direction * window.innerWidth, y: drag.y, isDragging: false })
+      setDrag({ x: direction * window.innerWidth * 1.5, y: drag.y, isDragging: false })
 
       // remove the card after the animation finishes
       setTimeout(() => {
         setCurrentIndex(prev => prev + 1)
         setDrag({ x: 0, y: 0, isDragging: false })
-      }, 300)
+      }, 400) // Increased timeout to match CSS transition
     } else {
       // snap back to centre
       setDrag({ x: 0, y: 0, isDragging: false })
@@ -107,13 +107,13 @@ export default function Recommendations({
     
     // Animate card based on action
     const direction = action === 'like' ? 1 : -1
-    setDrag({ x: direction * window.innerWidth, y: 0, isDragging: false })
+    setDrag({ x: direction * window.innerWidth * 1.5, y: 0, isDragging: false })
     
     // Move to next card after animation
     setTimeout(() => {
       setCurrentIndex(prev => prev + 1)
       setDrag({ x: 0, y: 0, isDragging: false })
-    }, 300)
+    }, 400)
   }
 
   if (!recommendations || recommendations.length === 0) {
@@ -155,7 +155,7 @@ export default function Recommendations({
             const translate = isTop ? `translate(${drag.x}px, ${drag.y}px)` : `translate(0px, ${-i * 8}px)`
             const rotate = isTop ? `rotate(${drag.x / 10}deg)` : `rotate(0deg)`
             const scale = isTop ? 1 : 1 - i * 0.04
-            const transition = drag.isDragging && isTop ? 'none' : 'transform 0.3s ease-out'
+            const transition = drag.isDragging && isTop ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
             
             // Calculate swipe feedback
             const threshold = 120
