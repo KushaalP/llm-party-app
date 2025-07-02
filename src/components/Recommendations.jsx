@@ -160,8 +160,8 @@ export default function Recommendations({
             // Calculate swipe feedback
             const threshold = 120
             const swipeProgress = isTop ? Math.min(Math.abs(drag.x) / threshold, 1) : 0
-            const isSwipingLeft = drag.x < -60
-            const showSwipeHint = swipeProgress > 0.5
+            const isSwipingLeft = drag.x < -40
+            const showSwipeHint = Math.abs(drag.x) > 40
 
             return (
               <div
@@ -188,10 +188,10 @@ export default function Recommendations({
                 
                 {/* Swipe Feedback Overlay */}
                 {isTop && showSwipeHint && (
-                  <div className={`swipe-feedback-overlay ${isSwipingLeft ? 'swipe-left' : 'swipe-right'}`}>
-                    <div className="swipe-feedback-icon">
-                      {isSwipingLeft ? '✖' : '♥'}
-                    </div>
+                  <div className={`swipe-feedback ${isSwipingLeft ? 'nope' : 'like'}`}>
+                    <span className="swipe-feedback-text">
+                      {isSwipingLeft ? 'NOPE' : 'LIKE'}
+                    </span>
                   </div>
                 )}
               </div>
