@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Users, Clock, Film } from 'lucide-react'
 import './WaitingScreen.css'
-
+import PropTypes from 'prop-types'
 export default function WaitingScreen({ 
   room, 
   isGenerating, 
@@ -38,7 +38,6 @@ export default function WaitingScreen({
       
       if (currentProgress >= 100) {
         currentProgress = 100
-        setProgressMessage('Finalizing recommendations...')
         clearInterval(interval)
       } else {
         // Update message every 25% progress
@@ -90,11 +89,20 @@ export default function WaitingScreen({
           <div className="progress-section">
             <div className="progress-bar-container">
               <div 
-                className="progress-bar"
+                className={`progress-bar ${progress >= 100 ? 'complete' : ''}`}
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="progress-message">{progressMessage}</p>
+            <p className="progress-message">
+              {progress >= 100 ? (
+                <>
+                  <span>Finalizing recommendations</span>
+                  <span className="anim-dots" />
+                </>
+              ) : (
+                progressMessage
+              )}
+            </p>
           </div>
         )}
 
@@ -117,7 +125,14 @@ export default function WaitingScreen({
                 <div className="participant-info">
                   <span className="participant-name">{participant.name}</span>
                   <span className="participant-status">
-                    {participant.isReady ? '✓ Ready' : 'Setting preferences...'}
+                    {participant.isReady ? (
+                      '✓ Ready'
+                    ) : (
+                      <>
+                        <span>Choosing</span>
+                        <span className="" />
+                      </>
+                    )}
                   </span>
                 </div>
               </div>
@@ -140,4 +155,10 @@ export default function WaitingScreen({
       </div>
     </div>
   )
+}
+
+WaitingScreen.propTypes = {
+  room: PropTypes.object.isRequired,
+  isGenerating: PropTypes.bool.isRequired,
+  onBackToPreferences: PropTypes.func.isRequired
 }
