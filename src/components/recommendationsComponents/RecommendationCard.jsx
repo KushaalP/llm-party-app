@@ -90,7 +90,6 @@ export default function RecommendationCard({
             </div>
           )}
 
-          <p className="tap-hint-back">Tap to flip back</p>
         </div>
       </div>
     </div>

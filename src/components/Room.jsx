@@ -5,6 +5,7 @@ import { useSocket } from '../hooks/useSocket'
 import Lobby from './Lobby'
 import Preferences from './Preferences'
 import Recommendations from './Recommendations'
+import WaitingScreen from './WaitingScreen'
 import { Film, LogOut } from 'lucide-react'
 
 const API_BASE = '/api'
@@ -17,7 +18,7 @@ export default function Room() {
   const [room, setRoom] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [phase, setPhase] = useState('lobby') // lobby, preferences, generating, results
+  const [phase, setPhase] = useState('lobby') // lobby, preferences, waiting, generating, results
   const [participantId] = useState(localStorage.getItem('participantId'))
   const [isHost] = useState(localStorage.getItem('isHost') === 'true')
 
@@ -136,17 +137,41 @@ export default function Room() {
   // Sync phase with room state
   useEffect(() => {
     if (room) {
+      let newPhase = phase
+      
+      // Priority order: results > generating > waiting > preferences > lobby
       if (room.recommendations) {
-        setPhase('results')
+        newPhase = 'results'
       } else if (room.locked) {
-        setPhase('generating')
+        newPhase = 'generating'
       } else if (room.preferencesStarted) {
-        setPhase('preferences')
+        const currentParticipant = room.participants?.find(p => p.id === participantId)
+        if (currentParticipant?.isReady) {
+          // User is ready, show waiting screen (unless already generating/results)
+          if (phase !== 'generating' && phase !== 'results') {
+            newPhase = 'waiting'
+          }
+        } else {
+          // User not ready, show preferences
+          newPhase = 'preferences'
+        }
       } else {
-        setPhase('lobby')
+        newPhase = 'lobby'
+      }
+      
+      if (newPhase !== phase) {
+        console.log(`Phase transition: ${phase} -> ${newPhase}`, {
+          hasRecommendations: !!room.recommendations,
+          isLocked: room.locked,
+          preferencesStarted: room.preferencesStarted,
+          userReady: room.participants?.find(p => p.id === participantId)?.isReady,
+          currentPhase: phase,
+          newPhase
+        })
+        setPhase(newPhase)
       }
     }
-  }, [room])
+  }, [room, participantId, phase])
 
   const startPreferences = () => {
     // Notify all participants to start preferences phase
@@ -171,6 +196,21 @@ export default function Room() {
         roomCode,
         participantId,
         isReady
+      })
+    }
+    
+    // Let the room-update event handle phase transitions
+    // No manual phase setting needed here
+  }
+
+  const handleBackToPreferences = () => {
+    setPhase('preferences')
+    // Emit socket event to unset ready state
+    if (socket) {
+      socket.emit('set-ready', {
+        roomCode,
+        participantId,
+        isReady: false
       })
     }
   }
@@ -249,6 +289,17 @@ export default function Room() {
 
   const currentParticipant = room?.participants.find(p => p.id === participantId)
 
+  // Show full-screen waiting screen when in waiting or generating phase
+  if (phase === 'waiting' || phase === 'generating') {
+    return (
+      <WaitingScreen
+        room={room}
+        isGenerating={phase === 'generating'}
+        onBackToPreferences={handleBackToPreferences}
+      />
+    )
+  }
+
   return (
     <div className="min-h-screen p-4 py-8">
       <div className="container mx-auto">
@@ -269,7 +320,6 @@ export default function Room() {
           <p className="text-white/70 text-lg font-medium">
             {phase === 'lobby' && 'Waiting for everyone to join'}
             {phase === 'preferences' && 'Share your movie preferences'}
-            {phase === 'generating' && 'AI is finding perfect movies for your group...'}
           </p>
         </div>
 
@@ -291,16 +341,6 @@ export default function Room() {
             isHost={isHost}
             onKickParticipant={handleKickParticipant}
           />
-        )}
-
-        {phase === 'generating' && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <Film className="w-20 h-20 animate-spin text-green-400 mx-auto mb-6" />
-              <h2 className="text-2xl font-semibold mb-2">Generating Recommendations</h2>
-              <p className="text-gray-400">Our AI is analyzing everyone's preferences...</p>
-            </div>
-          </div>
         )}
 
         {phase === 'results' && room?.recommendations && (

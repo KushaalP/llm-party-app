@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import PreferencesInputCard from './preferencesComponents/PreferencesInputCard'
 import ReadyStatusCard from './preferencesComponents/ReadyStatusCard'
 import GroupProgressCard from './preferencesComponents/GroupProgressCard'
@@ -22,6 +22,19 @@ export default function Preferences({ room, currentParticipant, onSubmitPreferen
   const [userPreferences, setUserPreferences] = useState([])
   const [currentInput, setCurrentInput] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
+
+  // Load existing preferences when component mounts or currentParticipant changes
+  useEffect(() => {
+    if (currentParticipant?.preferences && currentParticipant.preferences.trim()) {
+      // Parse the preferences string back into an array
+      const existingPrefs = currentParticipant.preferences
+        .split(', ')
+        .map(pref => pref.trim())
+        .filter(pref => pref.length > 0)
+      
+      setUserPreferences(existingPrefs)
+    }
+  }, [currentParticipant?.preferences])
 
   const addPreference = () => {
     if (currentInput.trim() && userPreferences.length < 5) {
