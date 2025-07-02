@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '../hooks/useSocket'
 import Lobby from './Lobby'
 import Preferences from './Preferences'
 import Recommendations from './Recommendations'
 import WaitingScreen from './WaitingScreen'
 import { Film, LogOut } from 'lucide-react'
+import { pageVariants, phaseVariants } from '../utils/animationVariants'
 
 const API_BASE = '/api'
 
@@ -260,18 +262,30 @@ export default function Room() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <motion.div 
+        className="min-h-screen flex items-center justify-center bg-gray-900"
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
         <div className="text-center">
           <Film className="w-12 h-12 animate-spin text-green-400 mx-auto mb-4" />
           <p className="text-gray-400">Loading room...</p>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <motion.div 
+        className="min-h-screen flex items-center justify-center bg-gray-900"
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
         <div className="text-center">
           <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-6 mb-4">
             <p className="text-red-400 text-lg">{error}</p>
@@ -283,77 +297,103 @@ export default function Room() {
             Back to Home
           </button>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
   const currentParticipant = room?.participants.find(p => p.id === participantId)
 
-  // Show full-screen waiting screen when in waiting or generating phase
-  if (phase === 'waiting' || phase === 'generating') {
-    return (
-      <WaitingScreen
-        room={room}
-        isGenerating={phase === 'generating'}
-        onBackToPreferences={handleBackToPreferences}
-      />
-    )
-  }
-
   return (
-    <div className="min-h-screen p-4 py-8">
-      <div className="container mx-auto">
-        <div className="text-center mb-8 relative">
-          <button
-            onClick={handleLeaveRoom}
-            className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
+    <motion.div 
+      className="min-h-screen"
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
+      <AnimatePresence mode="wait">
+        {/* Waiting/Generating phases - full screen */}
+        {(phase === 'waiting' || phase === 'generating') && (
+          <motion.div
+            key="waiting"
+            variants={phaseVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
           >
-            <LogOut className="w-4 h-4 " />
-            Leave Room
-          </button>
-          
-          {phase !== 'results' && (
-            <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-              Room <span className="gradient-text">{roomCode}</span>
-            </h1>
-          )}
-          <p className="text-white/70 text-lg font-medium">
-            {phase === 'lobby' && 'Waiting for everyone to join'}
-            {phase === 'preferences' && 'Share your movie preferences'}
-          </p>
-        </div>
-
-        {phase === 'lobby' && (
-          <Lobby
-            room={room}
-            isHost={isHost}
-            onStartPreferences={startPreferences}
-            onKickParticipant={handleKickParticipant}
-          />
+            <WaitingScreen
+              room={room}
+              isGenerating={phase === 'generating'}
+              onBackToPreferences={handleBackToPreferences}
+            />
+          </motion.div>
         )}
 
-        {phase === 'preferences' && (
-          <Preferences
-            room={room}
-            currentParticipant={currentParticipant}
-            onSubmitPreferences={handlePreferencesSubmit}
-            onSetReady={handleSetReady}
-            isHost={isHost}
-            onKickParticipant={handleKickParticipant}
-          />
-        )}
+        {/* Other phases */}
+        {phase !== 'waiting' && phase !== 'generating' && (
+          <motion.div 
+            key="main-content"
+            className="p-4 py-8"
+            variants={phaseVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <div className="container mx-auto">
+              <div className="text-center mb-8 relative">
+                <button
+                  onClick={handleLeaveRoom}
+                  className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
+                >
+                  <LogOut className="w-4 h-4 " />
+                  Leave Room
+                </button>
+                
+                {phase !== 'results' && (
+                  <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+                    Room <span className="gradient-text">{roomCode}</span>
+                  </h1>
+                )}
+                <p className="text-white/70 text-lg font-medium">
+                  {phase === 'lobby' && 'Waiting for everyone to join'}
+                  {phase === 'preferences' && 'Share your movie preferences'}
+                </p>
+              </div>
 
-        {phase === 'results' && room?.recommendations && (
-          <Recommendations
-            recommendations={room.recommendations}
-            isHost={isHost}
-            onRegenerate={handleRegenerateRecommendations}
-            canRegenerate={room.regenerateCount < 2}
-            onReroll={handleRerollMovie}
-            rerollCounts={room.rerollCounts}
-          />
+              {phase === 'lobby' && (
+                <Lobby
+                  room={room}
+                  isHost={isHost}
+                  onStartPreferences={startPreferences}
+                  onKickParticipant={handleKickParticipant}
+                />
+              )}
+
+              {phase === 'preferences' && (
+                <Preferences
+                  room={room}
+                  currentParticipant={currentParticipant}
+                  onSubmitPreferences={handlePreferencesSubmit}
+                  onSetReady={handleSetReady}
+                  isHost={isHost}
+                  onKickParticipant={handleKickParticipant}
+                />
+              )}
+
+              {phase === 'results' && room?.recommendations && (
+                <Recommendations
+                  recommendations={room.recommendations}
+                  isHost={isHost}
+                  onRegenerate={handleRegenerateRecommendations}
+                  canRegenerate={room.regenerateCount < 2}
+                  onReroll={handleRerollMovie}
+                  rerollCounts={room.rerollCounts}
+                />
+              )}
+            </div>
+          </motion.div>
         )}
-      </div>
-    </div>
+      </AnimatePresence>
+    </motion.div>
   )
 }

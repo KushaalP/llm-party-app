@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { Film } from 'lucide-react'
+import { motion } from 'framer-motion'
 import HomeCard from './homeComponents/HomeCard'
 import SwipeDeck from './homeComponents/SwipeDeck'
+import { pageVariants, getMotionSafeVariants } from '../utils/animationVariants'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 const API_BASE = '/api'
 
@@ -19,6 +22,7 @@ export default function Home() {
   const line1 = "45 minutes browsing. 5 people arguing. 0 movies watched."
   const line2Full = "Let's fix that in 2 minutes."
   const [typedLine2, setTypedLine2] = useState('')
+  const prefersReducedMotion = useReducedMotion()
 
   const handleCreateRoom = async () => {
     setIsCreating(true)
@@ -92,7 +96,13 @@ export default function Home() {
   }, [])
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
+    <motion.div 
+      style={{ minHeight: '100vh', background: '#0a0a0a' }}
+      variants={getMotionSafeVariants(pageVariants, prefersReducedMotion)}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
       {/* iOS-style Header */}
       <div style={{ 
         position: 'fixed', 
@@ -156,6 +166,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

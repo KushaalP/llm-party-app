@@ -5,7 +5,6 @@ export default function ReadyStatusCard({
   readyCount,
   totalParticipants,
   userPreferencesLength,
-  isReady,
   handleReadyToggle,
 }) {
   return (
