@@ -13,6 +13,7 @@ export default function Recommendations({
   // Swipe deck state
   const [currentIndex, setCurrentIndex] = useState(0)
   const [drag, setDrag] = useState({ x: 0, y: 0, isDragging: false })
+  const [isAnimating, setIsAnimating] = useState(false)
   const startPoint = useRef({ x: 0, y: 0 })
   const frameRef = useRef(null)
   const pendingDragRef = useRef(drag)
@@ -46,6 +47,7 @@ export default function Recommendations({
 
   // Swipe handlers - using same mechanics as SwipeDeck
   const handlePointerDown = (e) => {
+    if (isAnimating) return
     e.target.setPointerCapture(e.pointerId)
     startPoint.current = { x: e.clientX, y: e.clientY }
     setDrag({ x: 0, y: 0, isDragging: true })
@@ -69,20 +71,24 @@ export default function Recommendations({
   }
 
   const handlePointerUp = (e) => {
-    if (!drag.isDragging) return
+    if (!drag.isDragging || isAnimating) return
     const threshold = 120 // px required to count as a swipe
     const { x } = drag
     const hasSwiped = Math.abs(x) > threshold
 
     if (hasSwiped && currentIndex < recommendations.length - 1) {
+      // Prevent further actions while animating
+      setIsAnimating(true)
+      
       // animate card out of the viewport
       const direction = x > 0 ? 1 : -1
       setDrag({ x: direction * window.innerWidth * 1.5, y: drag.y, isDragging: false })
 
       // remove the card after the animation finishes
       setTimeout(() => {
-        setCurrentIndex(prev => prev + 1)
+        setCurrentIndex(prev => Math.min(prev + 1, recommendations.length - 1))
         setDrag({ x: 0, y: 0, isDragging: false })
+        setIsAnimating(false)
       }, 400) // Increased timeout to match CSS transition
     } else {
       // snap back to centre
@@ -103,7 +109,10 @@ export default function Recommendations({
   }
 
   const handleButtonAction = (action) => {
-    if (currentIndex >= recommendations.length - 1) return
+    if (currentIndex >= recommendations.length - 1 || isAnimating) return
+    
+    // Prevent further actions while animating
+    setIsAnimating(true)
     
     // Animate card based on action
     const direction = action === 'like' ? 1 : -1
@@ -111,8 +120,9 @@ export default function Recommendations({
     
     // Move to next card after animation
     setTimeout(() => {
-      setCurrentIndex(prev => prev + 1)
+      setCurrentIndex(prev => Math.min(prev + 1, recommendations.length - 1))
       setDrag({ x: 0, y: 0, isDragging: false })
+      setIsAnimating(false)
     }, 400)
   }
 
@@ -210,7 +220,8 @@ export default function Recommendations({
             </button>
             <button 
               className="tinder-button tinder-button-info"
-              onClick={() => toggleMobileExpansion(currentIndex)}
+              onClick={() => !isAnimating && toggleMobileExpansion(currentIndex)}
+              disabled={isAnimating}
             >
               <Info className="w-6 h-6" strokeWidth={2.5} />
             </button>
