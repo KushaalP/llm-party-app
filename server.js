@@ -274,23 +274,27 @@ io.on('connection', (socket) => {
         
         if (room.participants.every(p => p.isReady)) {
           room.locked = true;
-          io.to(roomCode).emit('generating-recommendations');
-
-          getMovieRecommendations([], room.participants)
-            .then(recommendations => {
-              room.recommendations = recommendations;
-              room.recommendationHistory = [
-                ...(room.recommendationHistory || []),
-                ...recommendations.map(m => m.title)
-              ];
-              room.rerollCounts = {};
-              io.to(roomCode).emit('recommendations-ready', recommendations);
-              io.to(roomCode).emit('room-update', room);
-            })
-            .catch(error => {
-              console.error('Error generating recommendations:', error);
-              io.to(roomCode).emit('recommendations-error', 'Failed to generate recommendations');
-            });
+          
+          // Small delay to ensure all clients transition to waiting phase
+          setTimeout(() => {
+            io.to(roomCode).emit('generating-recommendations');
+            
+            getMovieRecommendations([], room.participants)
+              .then(recommendations => {
+                room.recommendations = recommendations;
+                room.recommendationHistory = [
+                  ...(room.recommendationHistory || []),
+                  ...recommendations.map(m => m.title)
+                ];
+                room.rerollCounts = {};
+                io.to(roomCode).emit('recommendations-ready', recommendations);
+                io.to(roomCode).emit('room-update', room);
+              })
+              .catch(error => {
+                console.error('Error generating recommendations:', error);
+                io.to(roomCode).emit('recommendations-error', 'Failed to generate recommendations');
+              });
+          }, 100);
         }
       }
     }

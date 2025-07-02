@@ -4,11 +4,11 @@
 export const pageVariants = {
   initial: { 
     opacity: 0, 
-    x: -20 
+    scale: 0.95
   },
   animate: { 
     opacity: 1, 
-    x: 0,
+    scale: 1,
     transition: {
       duration: 0.3,
       ease: [0.0, 0.0, 0.2, 1]
@@ -16,7 +16,7 @@ export const pageVariants = {
   },
   exit: { 
     opacity: 0, 
-    x: 20,
+    scale: 0.95,
     transition: {
       duration: 0.2,
       ease: [0.4, 0.0, 1, 1]
@@ -28,12 +28,10 @@ export const pageVariants = {
 export const phaseVariants = {
   initial: { 
     opacity: 0, 
-    y: 20,
     scale: 0.98
   },
   animate: { 
     opacity: 1, 
-    y: 0,
     scale: 1,
     transition: {
       duration: 0.3,
@@ -42,7 +40,6 @@ export const phaseVariants = {
   },
   exit: { 
     opacity: 0, 
-    y: -20,
     scale: 0.98,
     transition: {
       duration: 0.2,

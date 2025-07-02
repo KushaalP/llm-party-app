@@ -58,9 +58,20 @@ export default function Room() {
 
     socket.emit('join-room', roomCode)
 
-    socket.on('room-update', (updatedRoom) => {
+    const handleRoomUpdate = (updatedRoom) => {
       setRoom(updatedRoom)
-    })
+      
+      // Check if all participants are ready and we're in preferences phase
+      // Use a callback to get the current phase value
+      setPhase(currentPhase => {
+        if (currentPhase === 'preferences' && updatedRoom.participants.every(p => p.isReady)) {
+          return 'waiting'
+        }
+        return currentPhase
+      })
+    }
+
+    socket.on('room-update', handleRoomUpdate)
 
     socket.on('participant-joined', (participant) => {
       setRoom(prev => ({
@@ -76,6 +87,7 @@ export default function Room() {
     })
 
     socket.on('generating-recommendations', () => {
+      console.log('Received generating-recommendations event')
       setPhase('generating')
     })
 
@@ -121,7 +133,7 @@ export default function Room() {
     })
 
     return () => {
-      socket.off('room-update')
+      socket.off('room-update', handleRoomUpdate)
       socket.off('participant-joined')
       socket.off('participant-kicked')
       socket.off('generating-recommendations')
@@ -329,10 +341,10 @@ export default function Room() {
           </motion.div>
         )}
 
-        {/* Other phases */}
-        {phase !== 'waiting' && phase !== 'generating' && (
+        {/* Lobby phase */}
+        {phase === 'lobby' && (
           <motion.div 
-            key="main-content"
+            key="lobby"
             className="p-4 py-8"
             variants={phaseVariants}
             initial="initial"
@@ -349,47 +361,93 @@ export default function Room() {
                   Leave Room
                 </button>
                 
-                {phase !== 'results' && (
-                  <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-                    Room <span className="gradient-text">{roomCode}</span>
-                  </h1>
-                )}
+                <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+                  Room <span className="gradient-text">{roomCode}</span>
+                </h1>
                 <p className="text-white/70 text-lg font-medium">
-                  {phase === 'lobby' && 'Waiting for everyone to join'}
-                  {phase === 'preferences' && 'Share your movie preferences'}
+                  Waiting for everyone to join
                 </p>
               </div>
 
-              {phase === 'lobby' && (
-                <Lobby
-                  room={room}
-                  isHost={isHost}
-                  onStartPreferences={startPreferences}
-                  onKickParticipant={handleKickParticipant}
-                />
-              )}
+              <Lobby
+                room={room}
+                isHost={isHost}
+                onStartPreferences={startPreferences}
+                onKickParticipant={handleKickParticipant}
+              />
+            </div>
+          </motion.div>
+        )}
 
-              {phase === 'preferences' && (
-                <Preferences
-                  room={room}
-                  currentParticipant={currentParticipant}
-                  onSubmitPreferences={handlePreferencesSubmit}
-                  onSetReady={handleSetReady}
-                  isHost={isHost}
-                  onKickParticipant={handleKickParticipant}
-                />
-              )}
+        {/* Preferences phase */}
+        {phase === 'preferences' && (
+          <motion.div 
+            key="preferences"
+            className="p-4 py-8"
+            variants={phaseVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <div className="container mx-auto">
+              <div className="text-center mb-8 relative">
+                <button
+                  onClick={handleLeaveRoom}
+                  className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
+                >
+                  <LogOut className="w-4 h-4 " />
+                  Leave Room
+                </button>
+                
+                <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+                  Room <span className="gradient-text">{roomCode}</span>
+                </h1>
+                <p className="text-white/70 text-lg font-medium">
+                  Share your movie preferences
+                </p>
+              </div>
 
-              {phase === 'results' && room?.recommendations && (
-                <Recommendations
-                  recommendations={room.recommendations}
-                  isHost={isHost}
-                  onRegenerate={handleRegenerateRecommendations}
-                  canRegenerate={room.regenerateCount < 2}
-                  onReroll={handleRerollMovie}
-                  rerollCounts={room.rerollCounts}
-                />
-              )}
+              <Preferences
+                room={room}
+                currentParticipant={currentParticipant}
+                onSubmitPreferences={handlePreferencesSubmit}
+                onSetReady={handleSetReady}
+                isHost={isHost}
+                onKickParticipant={handleKickParticipant}
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Results phase */}
+        {phase === 'results' && room?.recommendations && (
+          <motion.div 
+            key="results"
+            className="p-4 py-8"
+            variants={phaseVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <div className="container mx-auto">
+              <div className="text-center mb-8 relative">
+                <button
+                  onClick={handleLeaveRoom}
+                  className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
+                >
+                  <LogOut className="w-4 h-4 " />
+                  Leave Room
+                </button>
+              </div>
+
+              <Recommendations
+                recommendations={room.recommendations}
+                isHost={isHost}
+                onRegenerate={handleRegenerateRecommendations}
+                canRegenerate={room.regenerateCount < 2}
+                onReroll={handleRerollMovie}
+                rerollCounts={room.rerollCounts}
+              />
             </div>
           </motion.div>
         )}
