@@ -27,7 +27,9 @@ export default function Room() {
   const [isTransitioning, setIsTransitioning] = useState(false)
 
   useEffect(() => {
-    if (!participantId) {
+    if (!participantId || !localStorage.getItem('participantId')) {
+      // Store the room code they were trying to access
+      sessionStorage.setItem('attemptedRoomCode', roomCode)
       navigate('/')
       return
     }
@@ -35,13 +37,26 @@ export default function Room() {
     const fetchRoom = async () => {
       try {
         const response = await axios.get(`${API_BASE}/room/${roomCode}`)
-        setRoom(response.data)
+        const roomData = response.data
         
-        if (response.data.recommendations) {
+        // Verify participant is actually in this room
+        const isParticipantInRoom = roomData.participants?.some(p => p.id === participantId)
+        if (!isParticipantInRoom) {
+          console.log('Participant not found in room, redirecting to home')
+          localStorage.removeItem('participantId')
+          localStorage.removeItem('isHost')
+          sessionStorage.setItem('attemptedRoomCode', roomCode)
+          navigate('/')
+          return
+        }
+        
+        setRoom(roomData)
+        
+        if (roomData.recommendations) {
           setPhase('results')
-        } else if (response.data.locked) {
+        } else if (roomData.locked) {
           setPhase('generating')
-        } else if (response.data.preferencesStarted) {
+        } else if (roomData.preferencesStarted) {
           setPhase('preferences')
         }
         
@@ -58,7 +73,7 @@ export default function Room() {
   useEffect(() => {
     if (!socket) return
 
-    socket.emit('join-room', roomCode)
+    socket.emit('join-room', roomCode, participantId)
 
     const handleRoomUpdate = (updatedRoom) => {
       setRoom(updatedRoom)

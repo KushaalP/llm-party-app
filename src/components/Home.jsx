@@ -24,6 +24,16 @@ export default function Home() {
   const [typedLine2, setTypedLine2] = useState('')
   const prefersReducedMotion = useReducedMotion()
 
+  // Check if user was redirected from a room they couldn't access
+  useEffect(() => {
+    const attemptedCode = sessionStorage.getItem('attemptedRoomCode')
+    if (attemptedCode) {
+      setJoinCode(attemptedCode)
+      setError('Please enter your name to join this room')
+      sessionStorage.removeItem('attemptedRoomCode')
+    }
+  }, [])
+
   const handleCreateRoom = async () => {
     setIsCreating(true)
     setError('')
