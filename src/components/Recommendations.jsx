@@ -191,8 +191,9 @@ export default function Recommendations({
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Swipe Deck Container */}
-      <div className="swipe-deck-container">
+      {!swipesComplete ? (
+        /* Swipe Deck Container */
+        <div className="swipe-deck-container">
         {/* Progress indicator */}
         <div className="swipe-progress">
           <span className="progress-text">
@@ -288,13 +289,12 @@ export default function Recommendations({
             </button>
           </div>
         )}
-
-      </div>
-
-      {swipesComplete && (
-        <div className="mt-8 sm:mt-12 text-center">
-          <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 mx-2 sm:mx-0">
-            <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+        </div>
+      ) : (
+        /* Waiting Screen */
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 max-w-2xl w-full">
+            <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-6" />
             <h3 className="text-xl font-semibold mb-4">You've finished swiping!</h3>
             <p className="text-gray-400 mb-6">
               Waiting for everyone else to finish their selections...
@@ -306,12 +306,12 @@ export default function Recommendations({
                 <Users className="w-5 h-5 text-gray-400" />
                 <span className="text-gray-300 font-medium">Swipe Progress</span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 max-w-md mx-auto">
                 {room?.participants?.map((participant) => (
                   <div key={participant.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium text-white">
                       {participant.name}
-                      {participant.id === participantId && " (You)"}
+                      {participant.id === participantId && <span className="text-gray-400 ml-1">(You)</span>}
                     </span>
                     <span className={`text-sm font-medium ${participant.swipesCompleted ? 'text-green-400' : 'text-gray-400'}`}>
                       {participant.swipesCompleted ? '✓ Done' : 'Swiping...'}
@@ -333,7 +333,6 @@ export default function Recommendations({
           </div>
         </div>
       )}
-
     </div>
   )
 }
