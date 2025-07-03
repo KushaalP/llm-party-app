@@ -112,13 +112,13 @@ export default function Recommendations({
 
       // remove the card after the animation finishes
       setTimeout(() => {
-        const nextIndex = currentIndex + 1
+        const nextIndex = Math.min(currentIndex + 1, recommendations.length - 1)
         setCurrentIndex(nextIndex)
         setDrag({ x: 0, y: 0, isDragging: false })
         setIsAnimating(false)
 
         // Check if completed all swipes
-        if (nextIndex >= recommendations.length && socket) {
+        if (currentIndex === recommendations.length - 1 && socket) {
           setSwipesComplete(true)
           socket.emit('swipes-completed', {
             roomCode: room.code,
@@ -165,13 +165,13 @@ export default function Recommendations({
     
     // Move to next card after animation
     setTimeout(() => {
-      const nextIndex = currentIndex + 1
+      const nextIndex = Math.min(currentIndex + 1, recommendations.length - 1)
       setCurrentIndex(nextIndex)
       setDrag({ x: 0, y: 0, isDragging: false })
       setIsAnimating(false)
 
       // Check if completed all swipes
-      if (nextIndex >= recommendations.length && socket) {
+      if (currentIndex === recommendations.length - 1 && socket) {
         setSwipesComplete(true)
         socket.emit('swipes-completed', {
           roomCode: room.code,
@@ -196,7 +196,7 @@ export default function Recommendations({
         {/* Progress indicator */}
         <div className="swipe-progress">
           <span className="progress-text">
-            {currentIndex + 1} of {recommendations.length}
+            {Math.min(currentIndex + 1, recommendations.length)} of {recommendations.length}
           </span>
           <div className="progress-dots">
             {recommendations.map((_, idx) => (
