@@ -27,7 +27,20 @@ export default function Recommendations({
     setLoadingIndex(null)
     setCurrentIndex(0)
     setExpandedMobile(new Set())
+    setSwipesComplete(false)
   }, [recommendations])
+
+  // Sync swipesComplete with room data
+  useEffect(() => {
+    if (participantId && room?.participants) {
+      const participant = room.participants.find(p => p.id === participantId)
+      if (participant?.swipesCompleted) {
+        setSwipesComplete(true)
+        // Set index to end if already completed
+        setCurrentIndex(recommendations?.length || 0)
+      }
+    }
+  }, [room, participantId, recommendations])
 
   const formatRating = (value) => {
     if (value === undefined || value === null) return 'N/A'
