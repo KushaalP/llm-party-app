@@ -24,6 +24,7 @@ export default function Room() {
   const [phase, setPhase] = useState('lobby') // lobby, preferences, waiting, generating, results, swipe-results
   const [participantId] = useState(localStorage.getItem('participantId'))
   const [isHost] = useState(localStorage.getItem('isHost') === 'true')
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   useEffect(() => {
     if (!participantId) {
@@ -191,7 +192,10 @@ export default function Room() {
           currentPhase: phase,
           newPhase
         })
+        setIsTransitioning(true)
         setPhase(newPhase)
+        // Reset transitioning state after animation completes
+        setTimeout(() => setIsTransitioning(false), 300)
       }
     }
   }, [room, participantId, phase])
@@ -281,7 +285,7 @@ export default function Room() {
     navigate('/')
   }
 
-  if (loading) {
+  if (loading && !room) {
     return (
       <motion.div 
         className="min-h-screen flex items-center justify-center bg-gray-900"
