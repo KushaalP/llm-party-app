@@ -123,7 +123,7 @@ export default function SwipeResults({ room, recommendations }) {
                       let scoreClass = 'match-very-poor'
                       if (score >= 85) scoreClass = 'match-excellent'
                       else if (score >= 70) scoreClass = 'match-good'
-                      else if (score >= 50) scoreClass = 'match-fair'
+                      else if (score >= 50) scoreClass = 'match-moderate'
                       else if (score >= 30) scoreClass = 'match-poor'
 
                       return (
