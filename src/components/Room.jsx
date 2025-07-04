@@ -25,7 +25,6 @@ export default function Room() {
   const [phase, setPhase] = useState('lobby') // lobby, preferences, waiting, generating, results, swipe-results
   const [participantId] = useState(localStorage.getItem('participantId'))
   const [isHost] = useState(localStorage.getItem('isHost') === 'true')
-  const [isTransitioning, setIsTransitioning] = useState(false)
 
   useEffect(() => {
     if (!participantId || !localStorage.getItem('participantId')) {
@@ -208,10 +207,7 @@ export default function Room() {
           currentPhase: phase,
           newPhase
         })
-        setIsTransitioning(true)
         setPhase(newPhase)
-        // Reset transitioning state after animation completes
-        setTimeout(() => setIsTransitioning(false), 300)
       }
     }
   }, [room, participantId, phase])

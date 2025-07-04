@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { Heart, Users, Trophy, Film } from 'lucide-react'
 import './recommendationsComponents/Recommendations.css'
 
@@ -59,9 +60,9 @@ export default function SwipeResults({ room, recommendations }) {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-8">
         <Trophy className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-        <h1 className="text-3xl font-bold text-white mb-2">Your Group's Top Picks!</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Your Group&apos;s Top Picks!</h1>
         <p className="text-gray-400">
-          {matchedMovies.length} movie{matchedMovies.length > 1 ? 's' : ''} matched based on everyone's swipes
+          {matchedMovies.length} movie{matchedMovies.length > 1 ? 's' : ''} matched based on everyone&apos;s swipes
         </p>
       </div>
 
@@ -201,4 +202,9 @@ export default function SwipeResults({ room, recommendations }) {
       </div>
     </div>
   )
+}
+
+SwipeResults.propTypes = {
+  room: PropTypes.object.isRequired,
+  recommendations: PropTypes.array.isRequired
 }
