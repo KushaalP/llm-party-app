@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Heart, X, Info, Users, CheckCircle } from 'lucide-react'
 import RecommendationCard from './recommendationsComponents/RecommendationCard'
 import './recommendationsComponents/Recommendations.css'
+import PropTypes from 'prop-types'
 
 export default function Recommendations({
   recommendations,
@@ -21,14 +22,25 @@ export default function Recommendations({
   const startPoint = useRef({ x: 0, y: 0 })
   const frameRef = useRef(null)
   const pendingDragRef = useRef(drag)
+  const prevRecommendationsLength = useRef(0)
 
-  // reset loading state when recommendations prop changes
+  // reset loading state when recommendations meaningfully change
   useEffect(() => {
+    // Only reset if recommendations length changes or it's a completely different set
+    // This prevents resetting when the array reference changes but content is the same
+    if (!recommendations) return
+    
     setLoadingIndex(null)
-    setCurrentIndex(0)
     setExpandedMobile(new Set())
-    setSwipesComplete(false)
-  }, [recommendations])
+    
+    // Don't reset currentIndex or swipesComplete if we're in the middle of swiping
+    // Only reset if the recommendations array length has changed
+    if (prevRecommendationsLength.current !== recommendations.length) {
+      setCurrentIndex(0)
+      setSwipesComplete(false)
+      prevRecommendationsLength.current = recommendations.length
+    }
+  }, [recommendations?.length])
 
   // Sync swipesComplete with room data
   useEffect(() => {
@@ -295,7 +307,7 @@ export default function Recommendations({
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 max-w-2xl w-full">
             <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-6" />
-            <h3 className="text-xl font-semibold mb-4">You've finished swiping!</h3>
+            <h3 className="text-xl font-semibold mb-4">You&apos;ve finished swiping!</h3>
             <p className="text-gray-400 mb-6">
               Waiting for everyone else to finish their selections...
             </p>
@@ -335,4 +347,11 @@ export default function Recommendations({
       )}
     </div>
   )
+}
+
+Recommendations.propTypes = {
+  recommendations: PropTypes.array.isRequired,
+  room: PropTypes.object.isRequired,
+  participantId: PropTypes.string.isRequired,
+  socket: PropTypes.object.isRequired,
 }
