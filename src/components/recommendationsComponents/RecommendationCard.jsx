@@ -98,6 +98,49 @@ export default function RecommendationCard({
             </div>
           )}
 
+          {movie.watchProviders && (movie.watchProviders.streaming?.length > 0 || 
+                                     movie.watchProviders.rent?.length > 0 || 
+                                     movie.watchProviders.buy?.length > 0) && (
+            <div className="card-section">
+              <h4 className="section-title">Where to Watch</h4>
+              <div className="watch-providers">
+                {movie.watchProviders.streaming?.length > 0 && (
+                  <div className="provider-section">
+                    <p className="provider-label">Stream on:</p>
+                    <div className="provider-logos">
+                      {movie.watchProviders.streaming.map((provider, idx) => (
+                        <div key={idx} className="provider-item" title={provider.name}>
+                          {provider.logo ? (
+                            <img src={provider.logo} alt={provider.name} className="provider-logo" />
+                          ) : (
+                            <span className="provider-text">{provider.name}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {movie.watchProviders.rent?.length > 0 && (
+                  <div className="provider-section">
+                    <p className="provider-label">Rent from:</p>
+                    <div className="provider-logos">
+                      {movie.watchProviders.rent.map((provider, idx) => (
+                        <div key={idx} className="provider-item" title={provider.name}>
+                          {provider.logo ? (
+                            <img src={provider.logo} alt={provider.name} className="provider-logo" />
+                          ) : (
+                            <span className="provider-text">{provider.name}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {movie.participantMatchScore && (
             <div className="card-section">
               <h4 className="section-title">Match Scores</h4>

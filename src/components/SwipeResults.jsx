@@ -116,6 +116,57 @@ export default function SwipeResults({ room, recommendations }) {
                   </p>
                 </div>
 
+                {/* Where to Watch */}
+                {movie.watchProviders && (movie.watchProviders.streaming?.length > 0 || 
+                                           movie.watchProviders.rent?.length > 0) && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-semibold text-gray-300 mb-2">Where to Watch</h4>
+                    <div className="flex flex-wrap gap-3">
+                      {movie.watchProviders.streaming?.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">Stream:</span>
+                          {movie.watchProviders.streaming.map((provider, idx) => (
+                            <div key={idx} title={provider.name}>
+                              {provider.logo ? (
+                                <img 
+                                  src={provider.logo} 
+                                  alt={provider.name} 
+                                  className="w-10 h-10 rounded-lg shadow-md"
+                                />
+                              ) : (
+                                <span className="text-xs bg-gray-700 px-2 py-1 rounded">
+                                  {provider.name}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {movie.watchProviders.rent?.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">Rent:</span>
+                          {movie.watchProviders.rent.slice(0, 2).map((provider, idx) => (
+                            <div key={idx} title={provider.name}>
+                              {provider.logo ? (
+                                <img 
+                                  src={provider.logo} 
+                                  alt={provider.name} 
+                                  className="w-10 h-10 rounded-lg shadow-md"
+                                />
+                              ) : (
+                                <span className="text-xs bg-gray-700 px-2 py-1 rounded">
+                                  {provider.name}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Match scores if available */}
                 {movie.participantMatchScore && (
                   <div className="mt-4 flex flex-wrap gap-2">

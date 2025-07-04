@@ -117,6 +117,100 @@ async function fetchMovieDetails(title, releaseYear) {
 
       const genres = (detail.genres || []).map(g => g.name);
 
+      // Fetch watch providers (US region by default)
+      let watchProviders = null;
+      try {
+        const watchRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/watch/providers?api_key=${TMDB_API_KEY}`);
+        const watchData = await watchRes.json();
+        
+        // Major streaming platforms whitelist
+        const majorStreamingPlatforms = [
+          'Netflix', 'Disney Plus', 'Disney+', 'Hulu', 'Max', 'HBO Max',
+          'Amazon Prime Video', 'Prime Video', 'Apple TV Plus', 'Apple TV+',
+          'Paramount Plus', 'Paramount+', 'Peacock', 'Peacock Premium',
+          'Showtime', 'Starz', 'MGM+', 'MGM Plus', 'Discovery+', 'Discovery Plus',
+          'ESPN+', 'ESPN Plus', 'Crunchyroll'
+        ];
+        
+        // Major rental platforms whitelist
+        const majorRentalPlatforms = [
+          'Apple TV', 'Amazon Video', 'Google Play Movies', 'YouTube Movies',
+          'Vudu', 'Microsoft Store', 'FandangoNOW', 'YouTube'
+        ];
+        
+        // Function to normalize and check if provider is major
+        const isMajorProvider = (providerName, whitelist) => {
+          const normalizedName = providerName.toLowerCase();
+          return whitelist.some(major => 
+            normalizedName.includes(major.toLowerCase()) || 
+            major.toLowerCase().includes(normalizedName)
+          );
+        };
+        
+        // Function to get base platform name
+        const getBasePlatformName = (providerName) => {
+          // Remove variations like "via", "with", "Free", etc.
+          let baseName = providerName
+            .replace(/\s*(via|with|Free|Premium Plus).*$/i, '')
+            .replace(/\s*\(.*\)$/, '') // Remove anything in parentheses
+            .trim();
+          
+          // Normalize common variations
+          const nameMap = {
+            'Disney Plus': 'Disney+',
+            'HBO Max': 'Max',
+            'Amazon Prime Video': 'Prime Video',
+            'Apple TV Plus': 'Apple TV+',
+            'Paramount Plus': 'Paramount+',
+            'Discovery Plus': 'Discovery+',
+            'ESPN Plus': 'ESPN+',
+            'MGM Plus': 'MGM+'
+          };
+          
+          return nameMap[baseName] || baseName;
+        };
+        
+        // Get US providers (you can make this configurable later)
+        const usProviders = watchData.results?.US;
+        if (usProviders) {
+          // Process streaming providers
+          const streamingMap = new Map();
+          usProviders.flatrate?.forEach(p => {
+            if (isMajorProvider(p.provider_name, majorStreamingPlatforms)) {
+              const baseName = getBasePlatformName(p.provider_name);
+              if (!streamingMap.has(baseName)) {
+                streamingMap.set(baseName, {
+                  name: baseName,
+                  logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null
+                });
+              }
+            }
+          });
+          
+          // Process rental providers
+          const rentalMap = new Map();
+          usProviders.rent?.forEach(p => {
+            if (isMajorProvider(p.provider_name, majorRentalPlatforms)) {
+              const baseName = getBasePlatformName(p.provider_name);
+              if (!rentalMap.has(baseName)) {
+                rentalMap.set(baseName, {
+                  name: baseName,
+                  logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null
+                });
+              }
+            }
+          });
+          
+          watchProviders = {
+            streaming: Array.from(streamingMap.values()),
+            rent: Array.from(rentalMap.values()).slice(0, 4), // Limit to 4 rental options
+            buy: [] // Not showing buy options to keep it cleaner
+          };
+        }
+      } catch (err) {
+        console.log('Failed to fetch watch providers:', err);
+      }
+
       return {
         title: movie.title,
         year: movie.release_date ? new Date(movie.release_date).getFullYear() : releaseYear,
@@ -124,7 +218,8 @@ async function fetchMovieDetails(title, releaseYear) {
         genres,
         poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : undefined,
         overview: movie.overview,
-        rating: movie.vote_average ? Math.round(movie.vote_average * 10) / 10 : undefined
+        rating: movie.vote_average ? Math.round(movie.vote_average * 10) / 10 : undefined,
+        watchProviders
       };
     }
   } catch (err) {
@@ -193,7 +288,7 @@ ${formattedPrefs}${excludedSection}${participantSection}`;
         if (base) {
           return { ...base, reasoning: item.reasoning, participantMatchScore: item.participantMatchScore };
         }
-        return { title: item.title, year: item.year, reasoning: item.reasoning, participantMatchScore: item.participantMatchScore };
+        return { title: item.title, year: item.year, reasoning: item.reasoning, participantMatchScore: item.participantMatchScore, watchProviders: null };
       }));
       return enriched;
     }

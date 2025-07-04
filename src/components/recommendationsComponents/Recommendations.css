@@ -496,3 +496,51 @@
     transform: translateX(-50%) rotate(-30deg) scale(1);
   }
 }
+
+/* Watch Providers Styles */
+.watch-providers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.provider-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.provider-label {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  font-weight: 500;
+  margin: 0;
+}
+
+.provider-logos {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.provider-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.provider-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.provider-text {
+  font-size: 0.75rem;
+  color: #e5e7eb;
+  background: rgba(55, 65, 81, 0.5);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
