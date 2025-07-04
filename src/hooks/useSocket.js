@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { io } from 'socket.io-client'
+import { SOCKET_URL } from '../config/api'
 
 export function useSocket() {
   const socketRef = useRef(null)
 
   useEffect(() => {
-    const backendUrl = undefined; // Use same origin, proxy will handle it
-    socketRef.current = io(backendUrl, {
+    socketRef.current = io(SOCKET_URL, {
       autoConnect: true,
       transports: ['websocket', 'polling'],
       reconnection: true,

@@ -10,7 +10,13 @@
     "preview": "vite preview",
     "server": "node server.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
-    "start": "npm run build && node simple-server.js"
+    "start": "npm run build && node simple-server.js",
+    "ios": "npm run build && npx cap sync ios && npx cap open ios",
+    "ios:dev": "node scripts/update-ip.js && npm run build && npx cap sync ios && npx cap open ios",
+    "ios:dev:full": "node scripts/update-ip.js && concurrently \"npm run server\" \"npm run build && npx cap sync ios && npx cap open ios\"",
+    "sync:ios": "npx cap sync ios",
+    "open:ios": "npx cap open ios",
+    "update-ip": "node scripts/update-ip.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.1",
@@ -58,6 +64,7 @@
     "postcss": "^8.5.6",
     "react-router-dom": "^7.6.2",
     "tailwindcss": "^4.1.10",
+    "typescript": "^5.8.3",
     "vite": "^6.3.5"
   }
 }

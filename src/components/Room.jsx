@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '../hooks/useSocket'
+import { SERVER_URL } from '../config/api'
 import Lobby from './Lobby'
 import Preferences from './Preferences'
 import Recommendations from './Recommendations'
@@ -11,7 +12,7 @@ import SwipeResults from './SwipeResults'
 import { Film, LogOut } from 'lucide-react'
 import { pageVariants, phaseVariants } from '../utils/animationVariants'
 
-const API_BASE = '/api'
+const API_BASE = SERVER_URL + '/api'
 
 export default function Room() {
   const { roomCode } = useParams()

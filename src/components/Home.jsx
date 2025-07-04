@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { Film } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { SERVER_URL } from '../config/api'
 import HomeCard from './homeComponents/HomeCard'
 import SwipeDeck from './homeComponents/SwipeDeck'
 import { pageVariants, getMotionSafeVariants } from '../utils/animationVariants'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 
-const API_BASE = '/api'
+const API_BASE = SERVER_URL + '/api'
 
 export default function Home() {
   const [isCreating, setIsCreating] = useState(false)
@@ -47,7 +48,7 @@ export default function Home() {
       localStorage.setItem('isHost', 'true')
       localStorage.setItem('roomCode', roomCode)
       navigate(`/room/${roomCode}`)
-    } catch {
+    } catch (err) {
       setError('Failed to create room. Please try again.')
     } finally {
       setIsCreating(false)
