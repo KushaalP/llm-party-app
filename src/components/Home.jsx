@@ -124,7 +124,8 @@ export default function Home() {
         background: 'rgba(10, 10, 10, 0.95)', 
         backdropFilter: 'blur(16px)', 
         borderBottom: '1px solid #282828', 
-        padding: '16px 24px' 
+        padding: '16px 24px',
+        paddingTop: '70px' // Increased padding as requested
       }}>
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-white">
@@ -142,7 +143,12 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div style={{ paddingTop: '120px', paddingLeft: '24px', paddingRight: '24px' }}>
+      <div style={{ 
+        paddingTop: '170px', // Adjusted for 70px header padding
+        paddingLeft: '24px', 
+        paddingRight: '24px',
+        paddingBottom: '24px'
+      }}>
         <div className="max-w-md mx-auto">
           {/* Main Card */}
           <HomeCard

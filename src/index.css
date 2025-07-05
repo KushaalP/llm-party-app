@@ -27,11 +27,26 @@ body {
   width: 100%;
 }
 
+/* iOS Safe Area Support */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 20px);
+}
+
+/* For devices with notch/Dynamic Island */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .ios-header {
+    padding-top: calc(16px + env(safe-area-inset-top)) !important;
+  }
+}
+
 /* Spotify-like styling */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
+  /* Add safe area padding for iOS devices */
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
 }
 
 .mt-negative {
