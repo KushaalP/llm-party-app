@@ -23,6 +23,12 @@ export default function Recommendations({
   const frameRef = useRef(null)
   const pendingDragRef = useRef(drag)
   const prevRecommendationsLength = useRef(0)
+  
+  // Velocity tracking
+  const velocityRef = useRef({ x: 0, y: 0 })
+  const lastMoveTime = useRef(Date.now())
+  const lastPosition = useRef({ x: 0, y: 0 })
+  const smoothDragRef = useRef({ x: 0, y: 0 })
 
   // reset loading state when recommendations meaningfully change
   useEffect(() => {
@@ -74,21 +80,64 @@ export default function Recommendations({
     })
   }
 
-  // Swipe handlers - using same mechanics as SwipeDeck
+  // Swipe handlers with enhanced physics
   const handlePointerDown = (e) => {
     if (isAnimating) return
     e.target.setPointerCapture(e.pointerId)
-    startPoint.current = { x: e.clientX, y: e.clientY }
+    
+    // Get card position for tilt calculation
+    const rect = e.currentTarget.getBoundingClientRect()
+    const touchY = e.clientY - rect.top
+    const cardHeight = rect.height
+    
+    startPoint.current = { 
+      x: e.clientX, 
+      y: e.clientY,
+      touchOffset: (touchY / cardHeight) - 0.5 // -0.5 to 0.5, negative = top, positive = bottom
+    }
+    lastPosition.current = { x: e.clientX, y: e.clientY }
+    lastMoveTime.current = Date.now()
+    velocityRef.current = { x: 0, y: 0 }
+    smoothDragRef.current = { x: 0, y: 0 }
     setDrag({ x: 0, y: 0, isDragging: true })
   }
 
   const handlePointerMove = (e) => {
     if (!drag.isDragging) return
+    
+    const currentTime = Date.now()
+    const deltaTime = Math.max(1, currentTime - lastMoveTime.current)
+    
+    // Calculate raw position
     const dx = e.clientX - startPoint.current.x
     const dy = e.clientY - startPoint.current.y
-
-    // Store the latest drag values
-    pendingDragRef.current = { x: dx, y: dy, isDragging: true }
+    
+    // Calculate velocity
+    const vx = (e.clientX - lastPosition.current.x) / deltaTime * 100
+    const vy = (e.clientY - lastPosition.current.y) / deltaTime * 100
+    
+    // Apply exponential smoothing to velocity (0.3 = smoothing factor)
+    velocityRef.current.x = velocityRef.current.x * 0.7 + vx * 0.3
+    velocityRef.current.y = velocityRef.current.y * 0.7 + vy * 0.3
+    
+    // Apply smooth easing to drag position (spring-like feel)
+    const springFactor = 0.85
+    smoothDragRef.current.x = smoothDragRef.current.x * springFactor + dx * (1 - springFactor)
+    smoothDragRef.current.y = smoothDragRef.current.y * springFactor + dy * (1 - springFactor)
+    
+    // Add slight vertical drift based on horizontal movement (natural arc)
+    const verticalDrift = Math.abs(smoothDragRef.current.x) * 0.05
+    
+    // Store the latest drag values with smoothing
+    pendingDragRef.current = { 
+      x: smoothDragRef.current.x, 
+      y: smoothDragRef.current.y + verticalDrift, 
+      isDragging: true 
+    }
+    
+    // Update tracking references
+    lastPosition.current = { x: e.clientX, y: e.clientY }
+    lastMoveTime.current = currentTime
 
     // Only schedule a state update if we don't already have one queued
     if (!frameRef.current) {
@@ -101,17 +150,32 @@ export default function Recommendations({
 
   const handlePointerUp = (e) => {
     if (!drag.isDragging || isAnimating) return
-    const threshold = 120 // px required to count as a swipe
-    const { x } = drag
-    const hasSwiped = Math.abs(x) > threshold
-
+    
+    const { x, y } = drag
+    const velocityX = Math.abs(velocityRef.current.x)
+    
+    // Dynamic threshold based on velocity (lower threshold for faster swipes)
+    const baseThreshold = 120
+    const velocityThreshold = Math.max(50, baseThreshold - velocityX * 0.5)
+    
+    // Consider both position and velocity for swipe detection
+    const hasSwiped = Math.abs(x) > velocityThreshold || velocityX > 150
+    
     if (hasSwiped && currentIndex <= recommendations.length - 1) {
       // Prevent further actions while animating
       setIsAnimating(true)
       
-      // animate card out of the viewport
+      // Calculate exit trajectory based on velocity and position
       const direction = x > 0 ? 1 : -1
-      setDrag({ x: direction * window.innerWidth * 1.5, y: drag.y, isDragging: false })
+      const exitVelocity = Math.max(Math.abs(velocityRef.current.x), 200)
+      const exitDistance = window.innerWidth * 1.5
+      const exitY = y + (velocityRef.current.y * 0.3) // Natural arc based on velocity
+      
+      setDrag({ 
+        x: direction * exitDistance, 
+        y: exitY, 
+        isDragging: false 
+      })
 
       // Emit like event if swiped right
       if (direction > 0 && socket) {
@@ -122,12 +186,19 @@ export default function Recommendations({
         })
       }
 
+      // Calculate animation duration based on exit velocity
+      const animationDuration = Math.min(600, Math.max(300, 1000 / (exitVelocity * 0.01)))
+      
       // remove the card after the animation finishes
       setTimeout(() => {
         const nextIndex = Math.min(currentIndex + 1, recommendations.length - 1)
         setCurrentIndex(nextIndex)
         setDrag({ x: 0, y: 0, isDragging: false })
         setIsAnimating(false)
+        
+        // Reset smooth drag values
+        smoothDragRef.current = { x: 0, y: 0 }
+        velocityRef.current = { x: 0, y: 0 }
 
         // Check if completed all swipes
         if (currentIndex === recommendations.length - 1 && socket) {
@@ -137,10 +208,15 @@ export default function Recommendations({
             participantId
           })
         }
-      }, 400) // Increased timeout to match CSS transition
+      }, animationDuration)
     } else {
-      // snap back to centre
+      // Smooth spring-back animation
       setDrag({ x: 0, y: 0, isDragging: false })
+      // Reset tracking values after snap back
+      setTimeout(() => {
+        smoothDragRef.current = { x: 0, y: 0 }
+        velocityRef.current = { x: 0, y: 0 }
+      }, 400)
     }
 
     try {
@@ -231,15 +307,30 @@ export default function Recommendations({
             const index = currentIndex + i
             const isTop = i === 0
             const translate = isTop ? `translate(${drag.x}px, ${drag.y}px)` : `translate(0px, ${-i * 8}px)`
-            const rotate = isTop ? `rotate(${drag.x / 10}deg)` : `rotate(0deg)`
-            const scale = isTop ? 1 : 1 - i * 0.04
-            const transition = drag.isDragging && isTop ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
             
-            // Calculate swipe feedback
+            // More natural rotation with slight dampening and touch offset influence
+            const rotationDampening = 15
+            const maxRotation = 20
+            const baseRotation = drag.x / rotationDampening
+            const touchInfluence = startPoint.current?.touchOffset || 0
+            const rotation = isTop ? Math.max(-maxRotation, Math.min(maxRotation, baseRotation + (touchInfluence * 5))) : 0
+            const rotate = `rotate(${rotation}deg)`
+            
+            // Dynamic scaling for stacked cards
+            const scale = isTop ? 1 : 1 - i * 0.04 + (isTop ? 0 : Math.min(0.02, Math.abs(drag.x) / 1000))
+            
+            // Spring-based transitions
+            const springTransition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            const snapBackTransition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            const transition = drag.isDragging && isTop ? 'none' : 
+                              (drag.x === 0 && drag.y === 0) ? springTransition : snapBackTransition
+            
+            // Calculate swipe feedback with velocity consideration
+            const velocityBoost = Math.min(1, Math.abs(velocityRef.current.x) / 200)
             const threshold = 120
-            const swipeProgress = isTop ? Math.min(Math.abs(drag.x) / threshold, 1) : 0
-            const isSwipingLeft = drag.x < -40
-            const showSwipeHint = Math.abs(drag.x) > 40
+            const swipeProgress = isTop ? Math.min((Math.abs(drag.x) / threshold) + velocityBoost * 0.3, 1) : 0
+            const isSwipingLeft = drag.x < -30
+            const showSwipeHint = Math.abs(drag.x) > 30 || Math.abs(velocityRef.current.x) > 100
 
             return (
               <div
@@ -264,9 +355,12 @@ export default function Recommendations({
                   formatRating={formatRating}
                 />
                 
-                {/* Swipe Feedback Overlay */}
+                {/* Swipe Feedback Overlay with dynamic opacity */}
                 {isTop && showSwipeHint && (
-                  <div className={`swipe-feedback ${isSwipingLeft ? 'nope' : 'like'}`}>
+                  <div 
+                    className={`swipe-feedback ${isSwipingLeft ? 'nope' : 'like'}`}
+                    style={{ opacity: swipeProgress * 0.8 }}
+                  >
                     <span className="swipe-feedback-text">
                       {isSwipingLeft ? 'NOPE' : 'LIKE'}
                     </span>
