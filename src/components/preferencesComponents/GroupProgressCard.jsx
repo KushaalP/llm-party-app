@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 export default function GroupProgressCard({ room, currentParticipant, isHost, onKickParticipant }) {
   return (
@@ -60,4 +61,22 @@ export default function GroupProgressCard({ room, currentParticipant, isHost, on
       </div>
     </div>
   )
+}
+
+GroupProgressCard.propTypes = {
+  room: PropTypes.shape({
+    participants: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        isReady: PropTypes.bool.isRequired,
+      })
+    ).isRequired,
+    host: PropTypes.string.isRequired,
+  }).isRequired,
+  currentParticipant: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }).isRequired,
+  isHost: PropTypes.bool.isRequired,
+  onKickParticipant: PropTypes.func.isRequired,
 } 

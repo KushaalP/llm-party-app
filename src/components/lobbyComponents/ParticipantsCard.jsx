@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 export default function ParticipantsCard({ room, isHost, onKickParticipant }) {
   return (
@@ -54,4 +55,18 @@ export default function ParticipantsCard({ room, isHost, onKickParticipant }) {
       </div>
     </div>
   )
+}
+
+ParticipantsCard.propTypes = {
+  room: PropTypes.shape({
+    participants: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    host: PropTypes.string.isRequired,
+  }).isRequired,
+  isHost: PropTypes.bool.isRequired,
+  onKickParticipant: PropTypes.func.isRequired,
 } 

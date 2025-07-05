@@ -47,7 +47,7 @@ export default function Recommendations({
       setSwipesComplete(false)
       prevRecommendationsLength.current = recommendations.length
     }
-  }, [recommendations?.length])
+  }, [recommendations?.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync swipesComplete with room data
   useEffect(() => {
@@ -60,13 +60,6 @@ export default function Recommendations({
       }
     }
   }, [room, participantId, recommendations])
-
-  const formatRating = (value) => {
-    if (value === undefined || value === null) return 'N/A'
-    const num = Number(value)
-    if (Number.isNaN(num)) return 'N/A'
-    return `${num.toFixed(1)}/10`
-  }
 
   // Toggle details visibility for a given card on mobile
   const toggleMobileExpansion = (index) => {
@@ -362,7 +355,6 @@ export default function Recommendations({
                   loadingIndex={loadingIndex}
                   expanded={expandedMobile.has(index)}
                   toggleMobileExpansion={toggleMobileExpansion}
-                  formatRating={formatRating}
                   glowStyle={glowStyle}
                   isTop={isTop}
                 />

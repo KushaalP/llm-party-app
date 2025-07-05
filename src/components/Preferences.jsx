@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import PreferencesInputCard from './preferencesComponents/PreferencesInputCard'
 import ReadyStatusCard from './preferencesComponents/ReadyStatusCard'
 import GroupProgressCard from './preferencesComponents/GroupProgressCard'
@@ -106,4 +107,20 @@ export default function Preferences({ room, currentParticipant, onSubmitPreferen
       </div>
     </div>
   )
+}
+
+Preferences.propTypes = {
+  room: PropTypes.shape({
+    participants: PropTypes.arrayOf(PropTypes.shape({
+      isReady: PropTypes.bool
+    })).isRequired
+  }).isRequired,
+  currentParticipant: PropTypes.shape({
+    preferences: PropTypes.string,
+    isReady: PropTypes.bool
+  }),
+  onSubmitPreferences: PropTypes.func.isRequired,
+  onSetReady: PropTypes.func.isRequired,
+  isHost: PropTypes.bool.isRequired,
+  onKickParticipant: PropTypes.func.isRequired
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { CheckCircle2, Hourglass } from 'lucide-react'
 
 export default function ReadyStatusCard({
@@ -35,4 +36,11 @@ export default function ReadyStatusCard({
       )}
     </div>
   )
+}
+
+ReadyStatusCard.propTypes = {
+  readyCount: PropTypes.number.isRequired,
+  totalParticipants: PropTypes.number.isRequired,
+  userPreferencesLength: PropTypes.number.isRequired,
+  handleReadyToggle: PropTypes.func.isRequired,
 } 

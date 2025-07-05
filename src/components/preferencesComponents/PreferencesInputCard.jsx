@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { Clapperboard, X, Lightbulb, ChevronUp } from 'lucide-react'
 
 export default function PreferencesInputCard({
@@ -103,4 +104,17 @@ export default function PreferencesInputCard({
       )}
     </div>
   )
+}
+
+PreferencesInputCard.propTypes = {
+  userPreferences: PropTypes.arrayOf(PropTypes.string).isRequired,
+  currentInput: PropTypes.string.isRequired,
+  setCurrentInput: PropTypes.func.isRequired,
+  showSuggestions: PropTypes.bool.isRequired,
+  setShowSuggestions: PropTypes.func.isRequired,
+  addPreference: PropTypes.func.isRequired,
+  removePreference: PropTypes.func.isRequired,
+  addSuggestion: PropTypes.func.isRequired,
+  handleKeyPress: PropTypes.func.isRequired,
+  suggestionPrompts: PropTypes.arrayOf(PropTypes.string).isRequired,
 } 

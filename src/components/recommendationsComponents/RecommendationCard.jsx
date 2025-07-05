@@ -8,7 +8,6 @@ export default function RecommendationCard({
   loadingIndex,
   expanded,
   toggleMobileExpansion,
-  formatRating,
   glowStyle,
   isTop,
 }) {
@@ -185,9 +184,9 @@ export default function RecommendationCard({
 RecommendationCard.propTypes = {
   movie: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
-  loadingIndex: PropTypes.number.isRequired,
+  loadingIndex: PropTypes.number,
   expanded: PropTypes.bool.isRequired,
   toggleMobileExpansion: PropTypes.func.isRequired,
-  formatRating: PropTypes.func.isRequired,
-  
+  glowStyle: PropTypes.string,
+  isTop: PropTypes.bool
 }

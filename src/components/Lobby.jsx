@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { Clapperboard } from 'lucide-react'
 import PartyCodeCard from './lobbyComponents/PartyCodeCard'
 import ParticipantsCard from './lobbyComponents/ParticipantsCard'
@@ -49,4 +50,14 @@ export default function Lobby({ room, isHost, onStartPreferences, onKickParticip
       </div>
     </div>
   )
+}
+
+Lobby.propTypes = {
+  room: PropTypes.shape({
+    code: PropTypes.string.isRequired,
+    participants: PropTypes.arrayOf(PropTypes.object).isRequired
+  }).isRequired,
+  isHost: PropTypes.bool.isRequired,
+  onStartPreferences: PropTypes.func.isRequired,
+  onKickParticipant: PropTypes.func.isRequired
 }

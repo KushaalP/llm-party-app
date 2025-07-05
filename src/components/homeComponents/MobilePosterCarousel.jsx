@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { moviePosters } from '../../data/moviePosters'
 
 export default function MobilePosterCarousel({ line1, typedLine2 }) {
@@ -92,4 +93,9 @@ export default function MobilePosterCarousel({ line1, typedLine2 }) {
       </div>
     </div>
   )
+}
+
+MobilePosterCarousel.propTypes = {
+  line1: PropTypes.string.isRequired,
+  typedLine2: PropTypes.string.isRequired
 } 

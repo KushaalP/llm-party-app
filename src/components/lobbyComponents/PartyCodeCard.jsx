@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { Cake, Copy as CopyIcon, Check } from 'lucide-react'
 
 export default function PartyCodeCard({ code }) {
@@ -49,4 +50,8 @@ export default function PartyCodeCard({ code }) {
       </button>
     </div>
   )
+}
+
+PartyCodeCard.propTypes = {
+  code: PropTypes.string.isRequired
 } 
