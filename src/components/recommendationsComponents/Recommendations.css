@@ -65,7 +65,8 @@
   overflow: hidden;
   background: #1f2937;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3);
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.2s ease-out;
+  will-change: box-shadow;
 }
 
 /* Add dynamic shadow on drag */

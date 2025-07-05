@@ -8,6 +8,9 @@ export default function RecommendationCard({
   loadingIndex,
   expanded,
   toggleMobileExpansion,
+  formatRating,
+  glowStyle,
+  isTop,
 }) {
   const hasPoster = Boolean(movie.poster)
 
@@ -20,7 +23,10 @@ export default function RecommendationCard({
       }}
     >
       {/* Front of card */}
-      <div className="card-face card-front">
+      <div 
+        className="card-face card-front"
+        style={isTop && glowStyle ? { boxShadow: glowStyle } : undefined}
+      >
         {hasPoster && (
           <div className="card-poster-container">
             {loadingIndex === index && (

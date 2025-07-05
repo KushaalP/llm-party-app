@@ -332,6 +332,15 @@ export default function Recommendations({
             const swipeProgress = isTop ? Math.min((Math.abs(drag.x) / threshold) + velocityBoost * 0.3, 1) : 0
             const isSwipingLeft = drag.x < -30
             const showSwipeHint = Math.abs(drag.x) > 30 || Math.abs(velocityRef.current.x) > 100
+            
+            // Calculate glow effect
+            const glowIntensity = isTop && showSwipeHint ? swipeProgress * 0.6 : 0
+            const glowColor = isSwipingLeft 
+              ? `rgba(239, 68, 68, ${glowIntensity})` // Red for NOPE
+              : `rgba(34, 197, 94, ${glowIntensity})` // Green for LIKE
+            const glowStyle = isTop && showSwipeHint
+              ? `0 0 ${40 * swipeProgress}px ${glowColor}, 0 0 ${60 * swipeProgress}px ${glowColor}`
+              : undefined
 
             return (
               <div
@@ -354,6 +363,8 @@ export default function Recommendations({
                   expanded={expandedMobile.has(index)}
                   toggleMobileExpansion={toggleMobileExpansion}
                   formatRating={formatRating}
+                  glowStyle={glowStyle}
+                  isTop={isTop}
                 />
                 
                 {/* Swipe Feedback Overlay with dynamic opacity */}
