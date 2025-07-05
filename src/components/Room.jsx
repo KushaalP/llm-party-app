@@ -416,7 +416,7 @@ export default function Room() {
           <motion.div 
             key="lobby"
             className="p-4"
-            style={{ paddingTop: '140px' }} // Account for fixed header
+            style={{ paddingTop: '150px' }} // Account for fixed header
             variants={phaseVariants}
             initial="initial"
             animate="animate"
@@ -444,19 +444,13 @@ export default function Room() {
           <motion.div 
             key="preferences"
             className="p-4"
-            style={{ paddingTop: '140px' }} // Account for fixed header
+            style={{ paddingTop: '155px' }}
             variants={phaseVariants}
             initial="initial"
             animate="animate"
             exit="exit"
           >
             <div className="container mx-auto">
-              <div className="text-center mb-8">
-                <p className="text-white/70 text-lg font-medium">
-                  Share your movie preferences
-                </p>
-              </div>
-
               <Preferences
                 room={room}
                 currentParticipant={currentParticipant}
@@ -474,7 +468,7 @@ export default function Room() {
           <motion.div 
             key="results"
             className="p-4"
-            style={{ paddingTop: '140px' }} // Account for fixed header
+            style={{ paddingTop: '150px' }} // Account for fixed header
             variants={phaseVariants}
             initial="initial"
             animate="animate"
@@ -501,7 +495,7 @@ export default function Room() {
           <motion.div 
             key="swipe-results"
             className="p-4"
-            style={{ paddingTop: '140px' }} // Account for fixed header
+            style={{ paddingTop: '150px' }} // Account for fixed header
             variants={phaseVariants}
             initial="initial"
             animate="animate"
