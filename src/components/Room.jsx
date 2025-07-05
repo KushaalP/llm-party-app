@@ -349,37 +349,47 @@ export default function Room() {
       animate="animate"
       exit="exit"
     >
-      {/* Fixed Header */}
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0,
-        right: 0,
-        zIndex: 50, 
-        background: 'rgba(10, 10, 10, 0.95)', 
-        backdropFilter: 'blur(16px)', 
-        borderBottom: '1px solid #282828', 
-        padding: '16px 24px',
-        paddingTop: '70px' // Same as Home component
-      }}>
-        <div className="flex items-center justify-between">
-          <button
-            onClick={handleLeaveRoom}
-            className="btn btn-secondary flex items-center gap-2"
-            style={{ padding: '8px 16px' }}
+      {/* Fixed Header - only show for certain phases */}
+      <AnimatePresence>
+        {phase !== 'waiting' && phase !== 'generating' && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            style={{ 
+              position: 'fixed', 
+              top: 0, 
+              left: 0,
+              right: 0,
+              zIndex: 50, 
+              background: 'rgba(10, 10, 10, 0.95)', 
+              backdropFilter: 'blur(16px)', 
+              borderBottom: '1px solid #282828', 
+              padding: '16px 24px',
+              paddingTop: '70px' // Same as Home component
+            }}
           >
-            <LogOut className="w-4 h-4" />
-            Leave
-          </button>
-          
-          <h1 className="text-xl font-bold text-white">
-            Room <span className="gradient-text">{roomCode}</span>
-          </h1>
-          
-          {/* Empty div for flex spacing */}
-          <div style={{ width: '70px' }}></div>
-        </div>
-      </div>
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleLeaveRoom}
+                className="btn btn-secondary flex items-center gap-2"
+                style={{ padding: '8px 16px' }}
+              >
+                <LogOut className="w-4 h-4" />
+                Leave
+              </button>
+              
+              <h1 className="text-xl font-bold text-white">
+                Room <span className="gradient-text">{roomCode}</span>
+              </h1>
+              
+              {/* Empty div for flex spacing */}
+              <div style={{ width: '70px' }}></div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence mode="wait">
         {/* Waiting/Generating phases - full screen */}
@@ -390,12 +400,13 @@ export default function Room() {
             initial="initial"
             animate="animate"
             exit="exit"
-            style={{ paddingTop: '120px' }} // Account for fixed header
+            style={{ paddingTop: '0' }} // Full screen, no header
           >
             <WaitingScreen
               room={room}
               isGenerating={phase === 'generating'}
               onBackToPreferences={handleBackToPreferences}
+              participantId={participantId}
             />
           </motion.div>
         )}
