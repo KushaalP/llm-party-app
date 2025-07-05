@@ -8,6 +8,7 @@ import HomeCard from './homeComponents/HomeCard'
 import SwipeDeck from './homeComponents/SwipeDeck'
 import { pageVariants, getMotionSafeVariants } from '../utils/animationVariants'
 import { useReducedMotion } from '../hooks/useReducedMotion'
+import PropTypes from 'prop-types'
 
 const API_BASE = SERVER_URL + '/api'
 
@@ -49,6 +50,7 @@ export default function Home() {
       localStorage.setItem('roomCode', roomCode)
       navigate(`/room/${roomCode}`)
     } catch (err) {
+      console.error('Failed to create room:', err)
       setError('Failed to create room. Please try again.')
     } finally {
       setIsCreating(false)

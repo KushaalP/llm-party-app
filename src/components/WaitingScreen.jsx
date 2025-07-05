@@ -133,7 +133,6 @@ export default function WaitingScreen({
               const isReady = waitingType === 'swipeComplete' 
                 ? participant.swipesCompleted 
                 : participant.isReady;
-              const isCurrentUser = participantId && participant.id === participantId;
               
               return (
                 <div 
@@ -146,7 +145,6 @@ export default function WaitingScreen({
                   <div className="participant-info">
                     <span className="participant-name">
                       {participant.name}
-                      {isCurrentUser && <span className="text-gray-400 ml-1">(You)</span>}
                     </span>
                     <span className="participant-status">
                       {isReady ? (

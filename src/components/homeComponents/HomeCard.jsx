@@ -1,4 +1,5 @@
 import { Film } from 'lucide-react'
+import PropTypes from 'prop-types'
 
 export default function HomeCard({
   createName,
@@ -101,4 +102,18 @@ export default function HomeCard({
       )}
     </div>
   )
+}
+
+HomeCard.propTypes = {
+  createName: PropTypes.string.isRequired,
+  setCreateName: PropTypes.func.isRequired,
+  isCreating: PropTypes.bool.isRequired,
+  handleCreateRoom: PropTypes.func.isRequired,
+  joinCode: PropTypes.string.isRequired,
+  setJoinCode: PropTypes.func.isRequired,
+  joinName: PropTypes.string.isRequired,
+  setJoinName: PropTypes.func.isRequired,
+  isJoining: PropTypes.bool.isRequired,
+  handleJoinRoom: PropTypes.func.isRequired,
+  error: PropTypes.string
 } 
