@@ -343,11 +343,44 @@ export default function Room() {
   return (
     <motion.div 
       className="min-h-screen"
+      style={{ background: '#0a0a0a' }}
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
     >
+      {/* Fixed Header */}
+      <div style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0,
+        right: 0,
+        zIndex: 50, 
+        background: 'rgba(10, 10, 10, 0.95)', 
+        backdropFilter: 'blur(16px)', 
+        borderBottom: '1px solid #282828', 
+        padding: '16px 24px',
+        paddingTop: '70px' // Same as Home component
+      }}>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={handleLeaveRoom}
+            className="btn btn-secondary flex items-center gap-2"
+            style={{ padding: '8px 16px' }}
+          >
+            <LogOut className="w-4 h-4" />
+            Leave
+          </button>
+          
+          <h1 className="text-xl font-bold text-white">
+            Room <span className="gradient-text">{roomCode}</span>
+          </h1>
+          
+          {/* Empty div for flex spacing */}
+          <div style={{ width: '70px' }}></div>
+        </div>
+      </div>
+
       <AnimatePresence mode="wait">
         {/* Waiting/Generating phases - full screen */}
         {(phase === 'waiting' || phase === 'generating') && (
@@ -357,6 +390,7 @@ export default function Room() {
             initial="initial"
             animate="animate"
             exit="exit"
+            style={{ paddingTop: '120px' }} // Account for fixed header
           >
             <WaitingScreen
               room={room}
@@ -370,25 +404,15 @@ export default function Room() {
         {phase === 'lobby' && (
           <motion.div 
             key="lobby"
-            className="p-4 py-8"
+            className="p-4"
+            style={{ paddingTop: '140px' }} // Account for fixed header
             variants={phaseVariants}
             initial="initial"
             animate="animate"
             exit="exit"
           >
             <div className="container mx-auto">
-              <div className="text-center mb-8 relative">
-                <button
-                  onClick={handleLeaveRoom}
-                  className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
-                >
-                  <LogOut className="w-4 h-4 " />
-                  Leave Room
-                </button>
-                
-                <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-                  Room <span className="gradient-text">{roomCode}</span>
-                </h1>
+              <div className="text-center mb-8">
                 <p className="text-white/70 text-lg font-medium">
                   Waiting for everyone to join
                 </p>
@@ -408,25 +432,15 @@ export default function Room() {
         {phase === 'preferences' && (
           <motion.div 
             key="preferences"
-            className="p-4 py-8"
+            className="p-4"
+            style={{ paddingTop: '140px' }} // Account for fixed header
             variants={phaseVariants}
             initial="initial"
             animate="animate"
             exit="exit"
           >
             <div className="container mx-auto">
-              <div className="text-center mb-8 relative">
-                <button
-                  onClick={handleLeaveRoom}
-                  className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
-                >
-                  <LogOut className="w-4 h-4 " />
-                  Leave Room
-                </button>
-                
-                <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-                  Room <span className="gradient-text">{roomCode}</span>
-                </h1>
+              <div className="text-center mb-8">
                 <p className="text-white/70 text-lg font-medium">
                   Share your movie preferences
                 </p>
@@ -448,23 +462,14 @@ export default function Room() {
         {phase === 'results' && room?.recommendations && (
           <motion.div 
             key="results"
-            className="p-4 py-8"
+            className="p-4"
+            style={{ paddingTop: '140px' }} // Account for fixed header
             variants={phaseVariants}
             initial="initial"
             animate="animate"
             exit="exit"
           >
             <div className="container mx-auto">
-              <div className="text-center mb-8 relative">
-                <button
-                  onClick={handleLeaveRoom}
-                  className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
-                >
-                  <LogOut className="w-4 h-4 " />
-                  Leave Room
-                </button>
-              </div>
-
               <Recommendations
                 recommendations={room.recommendations}
                 room={room}
@@ -484,23 +489,14 @@ export default function Room() {
         {phase === 'swipe-results' && room?.recommendations && (
           <motion.div 
             key="swipe-results"
-            className="p-4 py-8"
+            className="p-4"
+            style={{ paddingTop: '140px' }} // Account for fixed header
             variants={phaseVariants}
             initial="initial"
             animate="animate"
             exit="exit"
           >
             <div className="container mx-auto">
-              <div className="text-center mb-8 relative">
-                <button
-                  onClick={handleLeaveRoom}
-                  className="absolute top-0 right-0 btn btn-secondary flex items-center gap-2 px-4 py-2 mb-4"
-                >
-                  <LogOut className="w-4 h-4 " />
-                  Leave Room
-                </button>
-              </div>
-
               <SwipeResults
                 room={room}
                 recommendations={room.recommendations}
