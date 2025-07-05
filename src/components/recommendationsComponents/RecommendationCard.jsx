@@ -24,7 +24,7 @@ export default function RecommendationCard({
       {/* Front of card */}
       <div 
         className="card-face card-front"
-        style={isTop && glowStyle ? { boxShadow: glowStyle } : undefined}
+        style={isTop && glowStyle ? glowStyle : undefined}
       >
         {hasPoster && (
           <div className="card-poster-container">
@@ -187,6 +187,6 @@ RecommendationCard.propTypes = {
   loadingIndex: PropTypes.number,
   expanded: PropTypes.bool.isRequired,
   toggleMobileExpansion: PropTypes.func.isRequired,
-  glowStyle: PropTypes.string,
+  glowStyle: PropTypes.object,
   isTop: PropTypes.bool
 }

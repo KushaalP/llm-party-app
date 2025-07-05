@@ -326,13 +326,14 @@ export default function Recommendations({
             const isSwipingLeft = drag.x < -30
             const showSwipeHint = Math.abs(drag.x) > 30 || Math.abs(velocityRef.current.x) > 100
             
-            // Calculate glow effect
-            const glowIntensity = isTop && showSwipeHint ? swipeProgress * 0.6 : 0
-            const glowColor = isSwipingLeft 
-              ? `rgba(239, 68, 68, ${glowIntensity})` // Red for NOPE
-              : `rgba(34, 197, 94, ${glowIntensity})` // Green for LIKE
+            // Calculate glow effect - simplified for better mobile performance
             const glowStyle = isTop && showSwipeHint
-              ? `0 0 ${40 * swipeProgress}px ${glowColor}, 0 0 ${60 * swipeProgress}px ${glowColor}`
+              ? {
+                  boxShadow: isSwipingLeft
+                    ? `0 0 ${30 + swipeProgress * 20}px rgba(239, 68, 68, ${0.4 + swipeProgress * 0.3})`
+                    : `0 0 ${30 + swipeProgress * 20}px rgba(34, 197, 94, ${0.4 + swipeProgress * 0.3})`,
+                  transition: drag.isDragging ? 'none' : 'box-shadow 0.3s ease-out'
+                }
               : undefined
 
             return (
