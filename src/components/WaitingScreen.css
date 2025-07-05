@@ -172,8 +172,30 @@
   max-width: 500px;
   margin: 0 auto;
   overflow-y: auto;
+  overflow-x: hidden;
   max-height: 300px;
-  padding-bottom: 0.5rem; /* Add padding for overflow shadow */
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Custom scrollbar for webkit browsers */
+.participants-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.participants-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.participants-grid::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.participants-grid::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 .participant-card {
@@ -345,15 +367,21 @@
   }
   
   .participants-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
-    max-height: 250px;
+    max-height: 350px; /* Increased height for better scrolling */
+    padding: 0 0.25rem; /* Add small horizontal padding */
   }
   
   .participant-card {
-    padding: 0.75rem;
+    padding: 0.625rem;
     height: 68px;
     min-height: 68px;
+    gap: 0.75rem;
+  }
+  
+  .participant-name {
+    max-width: 100px; /* Adjust for 2-column layout */
   }
   
   .progress-section {
@@ -387,12 +415,13 @@
   
   .participants-grid {
     gap: 0.5rem;
-    max-height: 200px;
+    max-height: 280px;
+    grid-template-columns: repeat(2, 1fr); /* Maintain 2 columns even on very small screens */
   }
   
   .participant-card {
     padding: 0.5rem;
-    gap: 0.75rem;
+    gap: 0.5rem;
     height: 60px;
     min-height: 60px;
   }
@@ -404,11 +433,12 @@
   }
   
   .participant-name {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    max-width: 80px;
   }
   
   .participant-status {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
   
   .progress-section {

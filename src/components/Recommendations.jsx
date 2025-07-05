@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Heart, X, Info, Users, CheckCircle } from 'lucide-react'
+import { Heart, X, Info } from 'lucide-react'
 import RecommendationCard from './recommendationsComponents/RecommendationCard'
+import WaitingScreen from './WaitingScreen'
 import './recommendationsComponents/Recommendations.css'
 import PropTypes from 'prop-types'
 
@@ -398,46 +399,13 @@ export default function Recommendations({
         </div>
       ) : (
         /* Waiting Screen */
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 max-w-2xl w-full">
-            <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-6" />
-            <h3 className="text-xl font-semibold mb-4">You&apos;ve finished swiping!</h3>
-            <p className="text-gray-400 mb-6">
-              Waiting for everyone else to finish their selections...
-            </p>
-            
-            {/* Show who's done swiping */}
-            <div className="mb-6">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <Users className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-300 font-medium">Swipe Progress</span>
-              </div>
-              <div className="space-y-2 max-w-md mx-auto">
-                {room?.participants?.map((participant) => (
-                  <div key={participant.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                    <span className="text-sm font-medium text-white">
-                      {participant.name}
-                      {participant.id === participantId && <span className="text-gray-400 ml-1">(You)</span>}
-                    </span>
-                    <span className={`text-sm font-medium ${participant.swipesCompleted ? 'text-green-400' : 'text-gray-400'}`}>
-                      {participant.swipesCompleted ? '✓ Done' : 'Swiping...'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Host skip button */}
-            {room?.host === participantId && (
-              <button
-                onClick={() => socket.emit('skip-to-results', { roomCode: room.code, hostId: participantId })}
-                className="btn btn-primary"
-              >
-                Skip to Results
-              </button>
-            )}
-          </div>
-        </div>
+        <WaitingScreen
+          room={room}
+          isGenerating={false}
+          waitingType="swipeComplete"
+          participantId={participantId}
+          onSkipToResults={() => socket.emit('skip-to-results', { roomCode: room.code, hostId: participantId })}
+        />
       )}
     </div>
   )
