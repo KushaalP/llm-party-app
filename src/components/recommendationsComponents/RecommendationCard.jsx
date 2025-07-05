@@ -34,6 +34,13 @@ export default function RecommendationCard({
               className={`card-poster ${loadingIndex === index ? 'filter grayscale brightness-50' : ''}`}
             />
             <div className="card-gradient-overlay"></div>
+            
+            {/* Visual hint for tapping */}
+            {index === 0 && (
+              <div className="card-tap-hint">
+                <span>Tap for details</span>
+              </div>
+            )}
           </div>
         )}
 

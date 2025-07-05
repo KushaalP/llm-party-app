@@ -29,6 +29,12 @@ export default function Recommendations({
   const lastMoveTime = useRef(Date.now())
   const lastPosition = useRef({ x: 0, y: 0 })
   const smoothDragRef = useRef({ x: 0, y: 0 })
+  
+  // Tutorial state - check localStorage to see if user has seen tutorial
+  const [showTutorial, setShowTutorial] = useState(() => {
+    return localStorage.getItem('swipeTutorialComplete') !== 'true'
+  })
+  const [tutorialStep, setTutorialStep] = useState('swipe') // 'swipe', 'info', 'complete'
 
   // reset loading state when recommendations meaningfully change
   useEffect(() => {
@@ -297,9 +303,53 @@ export default function Recommendations({
           </div>
         </div>
 
-        {/* Swipe hint - only show on first card */}
-        {currentIndex === 0 && (
-          <p className="swipe-hint">Swipe to see your recommendations →</p>
+        {/* Tutorial overlay for first-time users */}
+        {showTutorial && currentIndex === 0 && (
+          <div className="tutorial-overlay">
+            {tutorialStep === 'swipe' && (
+              <div className="tutorial-swipe">
+                <div className="tutorial-hand-container">
+                  <div className="tutorial-hand">👆</div>
+                  <div className="tutorial-swipe-arrows">
+                    <div className="arrow-left">
+                      <span>←</span>
+                      <span className="arrow-text">Pass</span>
+                    </div>
+                    <div className="arrow-right">
+                      <span>→</span>
+                      <span className="arrow-text">Like</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="tutorial-text">Swipe left to pass, right to like</p>
+                <button 
+                  className="tutorial-next"
+                  onClick={() => setTutorialStep('info')}
+                >
+                  Got it!
+                </button>
+              </div>
+            )}
+            
+            {tutorialStep === 'info' && (
+              <div className="tutorial-info">
+                <div className="tutorial-info-pointer">
+                  <span className="tutorial-tap">👆</span>
+                  <p className="tutorial-text">Tap the info button or card for details</p>
+                </div>
+                <button 
+                  className="tutorial-next"
+                  onClick={() => {
+                    setShowTutorial(false)
+                    setTutorialStep('complete')
+                    localStorage.setItem('swipeTutorialComplete', 'true')
+                  }}
+                >
+                  Start swiping!
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         <div className="swipe-deck">
@@ -381,7 +431,7 @@ export default function Recommendations({
               <X className="w-8 h-8" strokeWidth={3} />
             </button>
             <button 
-              className="tinder-button tinder-button-info"
+              className={`tinder-button tinder-button-info ${showTutorial && tutorialStep === 'info' ? 'tutorial-pulse' : ''}`}
               onClick={() => !isAnimating && toggleMobileExpansion(currentIndex)}
               disabled={isAnimating}
             >
